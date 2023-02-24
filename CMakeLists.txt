@@ -9,8 +9,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_BUILD_TYPE "")
 
-add_compile_options(-Wall -Wextra -Wpedantic)
-
 add_compile_definitions(SFML_STATIC)
 
 # executable creation
