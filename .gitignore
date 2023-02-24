@@ -18,3 +18,4 @@ bld/
 # personal files
 .env.cmake
 .vscode
+*.ps1
