@@ -13,8 +13,7 @@ add_compile_definitions(SFML_STATIC)
 
 # executable creation
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB_RECURSE HEADERS ${PROJECT_SOURCE_DIR}/src/*.h)  # to have the headers in the VS Header Files filter
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	src
