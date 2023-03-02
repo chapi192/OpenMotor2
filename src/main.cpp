@@ -1,9 +1,11 @@
-#include <SFML/Graphics.hpp>
+#include <TGUI/Backend/SFML-Graphics.hpp>
 #include "Includes.h"
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "OpenMotor2");
+    tgui::Gui gui{window};
+
     sf::Font f_ariel;
     if (!f_ariel.loadFromFile("../data/arial.ttf")) {
         //damn...
@@ -26,12 +28,15 @@ int main()
         sf::Event event;
         while (window.pollEvent(event))
         {
+            gui.handleEvent(event);
+
             if (event.type == sf::Event::Closed)
                 window.close();
         }
 
 
         window.draw(txt_temp);
+        gui.draw();
         window.display();
     }
 
