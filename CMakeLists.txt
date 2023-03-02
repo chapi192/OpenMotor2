@@ -18,9 +18,11 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC
 	src
 	${SFML_PATH}/include
+	${TGUI_PATH}/include
 )
 target_link_directories(${PROJECT_NAME} PUBLIC
 	${SFML_PATH}/lib
+	${TGUI_PATH}/lib
 )
 target_link_libraries(${PROJECT_NAME}
 	sfml-graphics-s
@@ -30,4 +32,5 @@ target_link_libraries(${PROJECT_NAME}
 	opengl32
 	winmm
 	gdi32
+	tgui-s
 )
