@@ -1,6 +1,8 @@
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include "Includes.h"
 
+#include "TextInputController.hpp"
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "OpenMotor2");
@@ -17,6 +19,14 @@ int main()
     txt_temp.setFont(f_ariel);
     txt_temp.setString("Hello World!");
     txt_temp.setPosition((WIDTH / 2) - (txt_temp.getGlobalBounds().width / 2), HEIGHT / 2);
+
+    TextInputController textInputController;
+    textInputController.addTextInput({10, 20}, {100, 300});
+    textInputController.addTextInput({150, 30}, {150, 200}, "testing");
+
+    for (auto& textInput : textInputController.textInputs) {
+        gui.add(textInput);
+    }
 
     //sf::CircleShape shape(100.f);
     //shape.setFillColor(sf::Color::Green);
