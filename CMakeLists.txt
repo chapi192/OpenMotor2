@@ -25,6 +25,7 @@ target_link_directories(${PROJECT_NAME} PUBLIC
 	${TGUI_PATH}/lib
 )
 target_link_libraries(${PROJECT_NAME}
+	tgui-s
 	sfml-graphics-s
 	sfml-window-s
 	sfml-system-s
@@ -32,5 +33,4 @@ target_link_libraries(${PROJECT_NAME}
 	opengl32
 	winmm
 	gdi32
-	tgui-s
 )
