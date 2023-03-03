@@ -1,4 +1,4 @@
-# have a `set(SFML_PATH "filepath/to/sfml")` in a .env.cmake file
+# have a `set(SFML_PATH "filepath/to/sfml")` and another line for TGUI_PATH in a .env.cmake file
 include(./.env.cmake REQUIRED RESULT_VARIABLE LOCAL_ENV)
 cmake_minimum_required(VERSION 3.16)
 
@@ -13,7 +13,8 @@ add_compile_definitions(SFML_STATIC)
 
 # executable creation
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-add_executable(${PROJECT_NAME} ${SOURCES})
+file(GLOB_RECURSE HEADERS ${PROJECT_SOURCE_DIR}/src/*.h)  # to have the headers in the VS Header Files filter
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	src
