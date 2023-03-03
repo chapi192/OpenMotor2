@@ -40,7 +40,7 @@ int main()
 
     while (window.isOpen())
     {
-        window.clear(sf::Color(0x0f0f0fff));
+        window.clear(sf::Color(0xf0f0f0ff));
 
         sf::Event event;
         if (cbController.m_checkBoxes[2]->isChecked())
