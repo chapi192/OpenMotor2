@@ -1,9 +1,13 @@
-#include <SFML/Graphics.hpp>
+#include <TGUI/Backend/SFML-Graphics.hpp>
 #include "Includes.h"
+
+#include "TextInputController.hpp"
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "OpenMotor2");
+    tgui::Gui gui{window};
+
     sf::Font f_ariel;
     if (!f_ariel.loadFromFile("../data/arial.ttf")) {
         //damn...
@@ -16,6 +20,14 @@ int main()
     txt_temp.setString("Hello World!");
     txt_temp.setPosition((WIDTH / 2) - (txt_temp.getGlobalBounds().width / 2), HEIGHT / 2);
 
+    TextInputController textInputController;
+    textInputController.addTextInput({10, 20}, {100, 300});
+    textInputController.addTextInput({150, 30}, {150, 200}, "testing");
+
+    for (auto& textInput : textInputController.textInputs) {
+        gui.add(textInput);
+    }
+
     //sf::CircleShape shape(100.f);
     //shape.setFillColor(sf::Color::Green);
 
@@ -26,12 +38,15 @@ int main()
         sf::Event event;
         while (window.pollEvent(event))
         {
+            gui.handleEvent(event);
+
             if (event.type == sf::Event::Closed)
                 window.close();
         }
 
 
         window.draw(txt_temp);
+        gui.draw();
         window.display();
     }
 

@@ -1,4 +1,4 @@
-# have a `set(SFML_PATH "filepath/to/sfml")` in a .env.cmake file
+# have a `set(SFML_PATH "filepath/to/sfml")` and another line for TGUI_PATH in a .env.cmake file
 include(./.env.cmake REQUIRED RESULT_VARIABLE LOCAL_ENV)
 cmake_minimum_required(VERSION 3.16)
 
@@ -19,11 +19,15 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC
 	src
 	${SFML_PATH}/include
+	${TGUI_PATH}/include
 )
 target_link_directories(${PROJECT_NAME} PUBLIC
 	${SFML_PATH}/lib
+	${TGUI_PATH}/lib
 )
 target_link_libraries(${PROJECT_NAME}
+	tgui-s
+
 	sfml-graphics-s
 	sfml-window-s
 	sfml-system-s
