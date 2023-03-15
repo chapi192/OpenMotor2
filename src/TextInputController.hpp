@@ -8,11 +8,15 @@
 
 class TextInputController {
 public:
-	std::vector<tgui::TextArea::Ptr> textInputs;
 
 	void addTextInput(
 			const tgui::Layout2d& pos,
 			const tgui::Layout2d& size,
 			const tgui::String& text = ""
 	);
+
+	std::vector<tgui::TextArea::Ptr> getTextInputs();
+
+private:
+	std::vector<tgui::TextArea::Ptr> textInputs;
 };
