@@ -1,11 +1,10 @@
 #include <SFML/Graphics.hpp>
 #include <TGUI/TGUI.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
-#include "CheckBoxController.hpp"
 #include "Includes.h"
 #include <iostream>
-
-#include "TextInputController.hpp"
+#include "Controllers.hpp"
+#include <TGUI/Widgets/ChildWindow.hpp>
 
 int main()
 {
@@ -24,17 +23,38 @@ int main()
     txt_temp.setString("Hello World!");
     txt_temp.setPosition((WIDTH / 2) - (txt_temp.getGlobalBounds().width / 2), HEIGHT / 2);
 
+    TabContainerController tcController;
+    tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 2 * HEIGHT / 3}, { "Graph", "Grain" });
+    tcController.addTabContainer({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Input" });
+    tcController.addTabContainer({ WIDTH / 2, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Output" });
+    tcController.addTabContainer({ 2 * WIDTH / 3, HEIGHT / 40 }, { 37 * WIDTH / 120, 77 * HEIGHT / 120 }, { "File" });
+
+    for (tgui::TabContainer::Ptr tabContainer : tcController.getTabContainers())
+    {
+        gui.add(tabContainer);
+    }
+
+    SeparatorLineController slController;
+    slController.addSeparatorLine({ WIDTH / 40, HEIGHT / 40 }, { 19 * WIDTH / 20, 2 }); // top outline
+    slController.addSeparatorLine({ WIDTH / 40, 39 * HEIGHT / 40 - 1 }, { 19 * WIDTH / 20 + 1, 2 }); // bottom outline
+    slController.addSeparatorLine({ WIDTH / 40, HEIGHT / 40 }, { 2, 19 * HEIGHT / 20 }); // left outline
+    slController.addSeparatorLine({ 39 * WIDTH / 40 - 1, HEIGHT / 40 }, { 2, 19 * HEIGHT / 20 + 1 }); // right outline
+    slController.addSeparatorLine({ 2 * WIDTH / 3 - 1, HEIGHT / 40 }, { 2, 77 * HEIGHT / 120 }); // graph/grain and file
+    slController.addSeparatorLine({ WIDTH / 2 - 1, 2 * HEIGHT / 3 }, { 2, 37 * HEIGHT / 120 }); // input and output
+    slController.addSeparatorLine({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 20, 2 }); // input/output and grain/graph/file
+
+    for (tgui::SeparatorLine::Ptr separatorLine : slController.getSeparatorLines())
+    {
+        gui.add(separatorLine);
+    }
+
     CheckboxController cbController;
-    try {
-    cbController.addCheckbox(sf::Vector2f(3.f / 4.f * WIDTH, 1.f / 6.f * HEIGHT), sf::Vector2f(30, 30), "THIS IS A TEST");
-    cbController.addCheckbox(sf::Vector2f(3.f / 4.f * WIDTH, 1.f / 3.f * HEIGHT), sf::Vector2f(25, 20), "MAKE FIRST ONE INVISIBLE!!");
-    cbController.addCheckbox(sf::Vector2f(3.f / 4.f * WIDTH, 1.f / 2.f * HEIGHT), sf::Vector2f(30, 25), "Click to close");
-    cbController.addCheckbox(sf::Vector2f(3.f / 4.f * WIDTH, 2.f / 3.f * HEIGHT), sf::Vector2f(20, 20), "Prohibit close checkbox");
-    }
-    catch (const tgui::Exception& e) {
-        std::cerr << "TGUI Exception: " << e.what() << std::endl;
-    }
-    for (tgui::CheckBox::Ptr widget : cbController.m_checkBoxes)
+    cbController.addCheckbox({3.f / 4.f * WIDTH, 1.f / 6.f * HEIGHT}, {30, 30}, "THIS IS A TEST");
+    cbController.addCheckbox({3.f / 4.f * WIDTH, 1.f / 3.f * HEIGHT}, {25, 20}, "MAKE FIRST ONE INVISIBLE!!");
+    cbController.addCheckbox({3.f / 4.f * WIDTH, 1.f / 2.f * HEIGHT}, {30, 25}, "Click to close");
+    cbController.addToggleInputCheckbox({3.f / 4.f * WIDTH, 2.f / 3.f * HEIGHT}, {20, 20}, cbController.getCheckBoxes()[2], "Prohibit close checkbox");
+
+    for (tgui::CheckBox::Ptr widget : cbController.getCheckBoxes())
     {
         gui.add(widget);
     }
@@ -43,7 +63,7 @@ int main()
     textInputController.addTextInput({10, 20}, {100, 300});
     textInputController.addTextInput({150, 30}, {150, 200}, "testing");
 
-    for (auto& textInput : textInputController.textInputs) {
+    for (auto& textInput : textInputController.getTextInputs()) {
         gui.add(textInput);
     }
 
@@ -55,17 +75,9 @@ int main()
         window.clear(sf::Color(0xf0f0f0ff));
 
         sf::Event event;
-        if (cbController.m_checkBoxes[2]->isChecked())
+        if (cbController.getCheckBoxes()[2]->isChecked())
             window.close();
-        if (cbController.m_checkBoxes[1]->isChecked())
-            cbController.m_checkBoxes[0]->setVisible(false);
-        else 
-            cbController.m_checkBoxes[0]->setVisible(true);
-        if (cbController.m_checkBoxes[3]->isChecked())
-            cbController.m_checkBoxes[2]->setEnabled(false);
-        else 
-            cbController.m_checkBoxes[2]->setEnabled(true);
-
+        
         while (window.pollEvent(event))
         {
             gui.handleEvent(event);
