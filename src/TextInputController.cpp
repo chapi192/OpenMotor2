@@ -20,3 +20,5 @@ void TextInputController::addTextInput(
 
 	textInputs.push_back(textArea);
 }
+
+std::vector<tgui::TextArea::Ptr> TextInputController::getTextInputs() { return textInputs; }
