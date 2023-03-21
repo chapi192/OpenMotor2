@@ -48,24 +48,36 @@ int main()
         gui.add(separatorLine);
     }
 
+
+    TextInputController textInputController;
+    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 30 }, { 50, 25 });
+    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 60 }, { 50, 25 }, "testing");
+    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 90 }, { 50, 25 });
+    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 120 }, { 50, 25 });
+
+    for (auto& textInput : textInputController.getTextInputs()) {
+        gui.add(textInput);
+    }
+
     CheckboxController cbController;
-    cbController.addCheckbox({3.f / 4.f * WIDTH, 1.f / 6.f * HEIGHT}, {30, 30}, "THIS IS A TEST");
-    cbController.addCheckbox({3.f / 4.f * WIDTH, 1.f / 3.f * HEIGHT}, {25, 20}, "MAKE FIRST ONE INVISIBLE!!");
-    cbController.addCheckbox({3.f / 4.f * WIDTH, 1.f / 2.f * HEIGHT}, {30, 25}, "Click to close");
-    cbController.addToggleInputCheckbox({3.f / 4.f * WIDTH, 2.f / 3.f * HEIGHT}, {20, 20}, cbController.getCheckBoxes()[2], "Prohibit close checkbox");
+    cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 38 }, { 9, 9 }, textInputController.getTextInputs()[0], "Force");
+    cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 68 }, { 9, 9 }, textInputController.getTextInputs()[1], "Input 2");
+    cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 98 }, { 9, 9 }, textInputController.getTextInputs()[2], "Input 3");
+    cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 128 }, { 9, 9 }, textInputController.getTextInputs()[3], "Input 4");
 
     for (tgui::CheckBox::Ptr widget : cbController.getCheckBoxes())
     {
         gui.add(widget);
     }
 
-    TextInputController textInputController;
-    textInputController.addTextInput({10, 20}, {100, 300});
-    textInputController.addTextInput({150, 30}, {150, 200}, "testing");
+    ButtonController bController;
+    bController.addButton({ 1.f / 2.f * WIDTH - 80, 2.f / 3.f * HEIGHT + 25 }, { 75, 25 }, "Compute");
 
-    for (auto& textInput : textInputController.getTextInputs()) {
-        gui.add(textInput);
+    for (tgui::Button::Ptr button : bController.getButtons())
+    {
+        gui.add(button);
     }
+        
 
     //sf::CircleShape shape(100.f);
     //shape.setFillColor(sf::Color::Green);
@@ -75,8 +87,6 @@ int main()
         window.clear(sf::Color(0xf0f0f0ff));
 
         sf::Event event;
-        if (cbController.getCheckBoxes()[2]->isChecked())
-            window.close();
         
         while (window.pollEvent(event))
         {
