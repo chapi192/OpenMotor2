@@ -6,6 +6,8 @@
 #include "Controllers.hpp"
 #include <TGUI/Widgets/ChildWindow.hpp>
 
+#include "Graph/Plot.hpp"
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "OpenMotor2");
@@ -24,7 +26,7 @@ int main()
     txt_temp.setPosition((WIDTH / 2) - (txt_temp.getGlobalBounds().width / 2), HEIGHT / 2);
 
     TabContainerController tcController;
-    tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 2 * HEIGHT / 3}, { "Graph", "Grain" });
+    tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 20 * HEIGHT / 31}, { "Graph", "Grain" });
     tcController.addTabContainer({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Input" });
     tcController.addTabContainer({ WIDTH / 2, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Output" });
     tcController.addTabContainer({ 2 * WIDTH / 3, HEIGHT / 40 }, { 37 * WIDTH / 120, 77 * HEIGHT / 120 }, { "File" });
@@ -77,7 +79,32 @@ int main()
     {
         gui.add(button);
     }
-        
+
+    tgui::CanvasSFML::Ptr canvasSFML{ tgui::CanvasSFML::create() };
+    auto& tabContainer = *tcController.getTabContainers()[0];
+    tabContainer.select(0);  // To select the "Graph" panel
+    auto container = tabContainer.getPanel(0);  // A panel is a container
+    container->add(canvasSFML);
+
+    // TODO: use the same font as the one used for TGUI, instead of using f_ariel
+    Graph::Plot plot{ {}, container->getSize(), 50, f_ariel, "Time" };
+
+    std::vector<float> xAxis = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    std::vector<float> yAxis0 = { 6, 8, 12, 4, 5, 6, 5, 6, 7, 8 };
+    std::vector<float> yAxis1 = { 5, 7, 8, 6, 4, 7, 8, 9, 11, 15 };
+
+    std::string str = "Dataset " + std::to_string(plot.getDataSetCount());
+    Graph::DataSet set0{ xAxis, yAxis0, "Dataset 0", sf::Color::Green, Graph::DataSet::LINE };
+    Graph::DataSet set1{ xAxis, yAxis1, "Dataset 1", sf::Color::Red,   Graph::DataSet::LINE };
+    plot.addDataSet(set0);
+    plot.addDataSet(set1);
+
+    plot.scaleAxes();
+    plot.generateVertices();
+
+    canvasSFML->clear(sf::Color{0xffffffff});
+    canvasSFML->draw(plot);
+    canvasSFML->display();
 
     //sf::CircleShape shape(100.f);
     //shape.setFillColor(sf::Color::Green);
@@ -87,7 +114,7 @@ int main()
         window.clear(sf::Color(0xf0f0f0ff));
 
         sf::Event event;
-        
+
         while (window.pollEvent(event))
         {
             gui.handleEvent(event);
