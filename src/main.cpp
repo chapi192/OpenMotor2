@@ -6,7 +6,7 @@
 #include "Controllers.hpp"
 #include <TGUI/Widgets/ChildWindow.hpp>
 
-#include "Graph/Plot.hpp"
+#include "Graph/Canvas.hpp"
 
 int main()
 {
@@ -80,31 +80,19 @@ int main()
         gui.add(button);
     }
 
-    tgui::CanvasSFML::Ptr canvasSFML{ tgui::CanvasSFML::create() };
     auto& tabContainer = *tcController.getTabContainers()[0];
     tabContainer.select(0);  // To select the "Graph" panel
     auto container = tabContainer.getPanel(0);  // A panel is a container
-    container->add(canvasSFML);
 
     // TODO: use the same font as the one used for TGUI, instead of using f_ariel
-    Graph::Plot plot{ {}, container->getSize(), 50, f_ariel, "Time" };
+    Graph::Canvas graphCanvas{ container, f_ariel, "Time" };
 
     std::vector<float> xAxis = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
     std::vector<float> yAxis0 = { 6, 8, 12, 4, 5, 6, 5, 6, 7, 8 };
     std::vector<float> yAxis1 = { 5, 7, 8, 6, 4, 7, 8, 9, 11, 15 };
-
-    std::string str = "Dataset " + std::to_string(plot.getDataSetCount());
-    Graph::DataSet set0{ xAxis, yAxis0, "Dataset 0", sf::Color::Green, Graph::DataSet::LINE };
-    Graph::DataSet set1{ xAxis, yAxis1, "Dataset 1", sf::Color::Red,   Graph::DataSet::LINE };
-    plot.addDataSet(set0);
-    plot.addDataSet(set1);
-
-    plot.scaleAxes();
-    plot.generateVertices();
-
-    canvasSFML->clear(sf::Color{0xffffffff});
-    canvasSFML->draw(plot);
-    canvasSFML->display();
+    graphCanvas.addDataSet(xAxis, yAxis0, sf::Color::Green);
+    graphCanvas.addDataSet(xAxis, yAxis1, sf::Color::Red);
+    graphCanvas.update();
 
     //sf::CircleShape shape(100.f);
     //shape.setFillColor(sf::Color::Green);
