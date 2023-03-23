@@ -1,13 +1,12 @@
 #pragma once
 #include "Plot.hpp"
 #include <TGUI/Backend/SFML-Graphics.hpp>
-// #include <TGUI/Container.hpp>
 #include <vector>
 
 namespace Graph {
-class Canvas {
+class Graph {
 public:
-	inline Canvas(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel = "X Axis") :
+	inline Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel = "X Axis"):
 			canvasSFML{ tgui::CanvasSFML::create() },
 			plot{ {}, {}, 50, font, xAxisLabel }
 	{
