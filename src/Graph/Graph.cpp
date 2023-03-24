@@ -54,6 +54,11 @@ void Graph::updateLegend(float length) {
 	float height = heightOffset * m_buttons.size();
 	m_legend->setClientSize({length - 1, height - 1});
 
+	auto distanceToBottomRight = m_canvasPlot->getSize() - (m_legend->getPosition() + m_legend->getSize());
+	distanceToBottomRight.x = distanceToBottomRight.x < 0 ? distanceToBottomRight.x : 0;
+	distanceToBottomRight.y = distanceToBottomRight.y < 0 ? distanceToBottomRight.y : 0;
+	m_legend->setPosition(m_legend->getPosition() + distanceToBottomRight);
+
 	m_canvasLegend->clear(sf::Color{0xf0f0f0ff});
 
 	auto& dataSets = m_plot.getDataSets();

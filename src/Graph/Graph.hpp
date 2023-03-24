@@ -38,7 +38,7 @@ public:
 
 	inline void toggleDataset(int index) {
 		m_plot.toggleDatasetVisibility(index);
-		draw();
+		update();  // TODO: make this more modular rather than needing to generate vertices every time a dataset is toggled
 	}
 private:
 	Plot m_plot;

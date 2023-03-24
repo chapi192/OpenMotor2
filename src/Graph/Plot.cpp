@@ -56,25 +56,34 @@ void Plot::scaleAxes() {
 	float xMax = -INFINITY;
 	float yMax = -INFINITY;
 
-	for (const auto& dataset : m_dataSets) {
-		for (auto& val : dataset.getXValues()) {
+	for (size_t i = 0; i < m_dataSets.size(); i++) {
+		if (m_dataSetInvisible[i])
+			continue;
+		for (auto& val : m_dataSets[i].getXValues()) {
 			xMin = (xMin < val) ? xMin : val;
 			xMax = (xMax > val) ? xMax : val;
 		}
-		for (auto& val : dataset.getYValues()) {
+		for (auto& val : m_dataSets[i].getYValues()) {
 			yMin = (yMin < val) ? yMin : val;
 			yMax = (yMax > val) ? yMax : val;
 		}
 	}
 
-	m_min.x = xMin;
-	m_min.y = yMin;
-	m_max.x = xMax;
-	m_max.y = yMax;
+	if (xMin == INFINITY) {
+		m_min.x = 0;
+		m_min.y = 0;
+		m_max.x = 1;
+		m_max.y = 1;
+	} else {
+		m_min.x = xMin;
+		m_min.y = yMin;
+		m_max.x = xMax;
+		m_max.y = yMax;
+	}
 
 	const int stepCount = 8;
-	m_coordSteps.x = (xMax - xMin) / stepCount;
-	m_coordSteps.y = (yMax - yMin) / stepCount;
+	m_coordSteps.x = (m_max.x - m_min.x) / stepCount;
+	m_coordSteps.y = (m_max.y - m_min.y) / stepCount;
 }
 
 void Plot::addDataSet(const DataSet& data_set) {
