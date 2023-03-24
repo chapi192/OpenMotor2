@@ -14,6 +14,8 @@ void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	target.draw(m_axesVertexArray, states);
 	target.draw(m_axesIndicatorVertexArray, states);
 	for (size_t i = 0; i < m_dataSetsVertexArrays.size(); i++) {
+		if (m_dataSetInvisible[i])
+			continue;
 		target.draw(m_dataSetsVertexArrays[i], states);
 	}
 	for (size_t i = 0; i < m_textElementArray.size(); i++) {
@@ -77,6 +79,7 @@ void Plot::scaleAxes() {
 
 void Plot::addDataSet(const DataSet& data_set) {
 	m_dataSets.push_back(data_set);
+	m_dataSetInvisible.push_back(false);
 }
 
 void Plot::generateVertices() {
@@ -168,6 +171,10 @@ void Plot::generateVertices() {
 
 		m_dataSetsVertexArrays.push_back(graph);
 	}
+}
+
+void Plot::toggleDatasetVisibility(int index) {
+	m_dataSetInvisible[index] = !m_dataSetInvisible[index];
 }
 
 void Plot::clearVertices() {

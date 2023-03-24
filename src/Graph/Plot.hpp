@@ -46,6 +46,8 @@ public:
 	/** Clear SFML VertexArrays */
 	void clearVertices();
 
+	void toggleDatasetVisibility(int index);
+
 	inline void setAxesColor(const sf::Color& color) {
 		m_axesColor = color;
 	}
@@ -90,6 +92,7 @@ private:
 	sf::VertexArray m_axesVertexArray;
 	sf::VertexArray m_axesIndicatorVertexArray;
 
+	std::vector<bool> m_dataSetInvisible;
 	std::vector<sf::VertexArray> m_dataSetsVertexArrays;
 	std::vector<sf::Text> m_textElementArray;
 };
