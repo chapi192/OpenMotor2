@@ -10,7 +10,7 @@
 std::string toString(const double& d, const size_t& precision = 2);
 
 // Loosely based on https://github.com/jerr-it/SFGraphing
-namespace Graph {
+namespace graph {
 class Plot : public sf::Drawable {
 public:
 	/**

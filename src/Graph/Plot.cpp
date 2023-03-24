@@ -1,7 +1,7 @@
 #include "Plot.hpp"
 #include <cmath>
 #include <sstream>
-using namespace Graph;
+using namespace graph;
 
 std::string toString(const double& d, const size_t& precision) {
 	std::stringstream stream;

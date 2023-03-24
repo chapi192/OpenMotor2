@@ -4,7 +4,7 @@
 #include <cassert>
 #include "SFML/Graphics.hpp"
 
-namespace Graph {
+namespace graph {
 class DataSet {
 public:
 	enum Type {

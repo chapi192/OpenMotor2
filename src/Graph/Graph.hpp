@@ -6,61 +6,39 @@
 #include <TGUI/Widgets/ToggleButton.hpp>
 #include <vector>
 
-namespace Graph {
+namespace graph {
 class Graph {
 public:
-	inline Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel = "X Axis"):
-			canvasSFML{ tgui::CanvasSFML::create() },
-			plot{ {}, {}, 50, font, xAxisLabel }
-	{
-		container->add(canvasSFML);
-		plot.setSize(container->getSize());
+	Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel = "");
 
-		legend = tgui::ChildWindow::create("Legend", 0);
-		legend->setPosition(0.75 * container->getSize().x, 0.05 * container->getSize().y);
-		container->add(legend);
-
-		layout = tgui::VerticalLayout::create();
-		legend->add(layout);
-	}
-
-	inline void addDataSet(const std::vector<float>& xAxis, const std::vector<float>& yAxis, const sf::Color& color, bool on = true) {
-		const int datasetID = plot.getDataSetCount();
-		std::string str = "Dataset " + std::to_string(datasetID);
-		DataSet set{ xAxis, yAxis, str, color, DataSet::LINE };
-		plot.addDataSet(set);
-
-		auto button = tgui::ToggleButton::create(str, on);
-		if (!on)
-			toggleDataset(datasetID);
-		button->onToggle(&toggleDataset, this, datasetID);
-
-		auto size = button->getSize();
-		size.y += 10;
-		layout->add(button);
-		legend->setSize(size.x, layout->getWidgets().size() * size.y);
-	}
+	void addDataSet(
+			const std::vector<float>& xAxis,
+			const std::vector<float>& yAxis,
+			const sf::Color& color,
+			bool on = true
+	);
 
 	inline void update() {
-		plot.scaleAxes();
-		plot.generateVertices();
+		m_plot.scaleAxes();
+		m_plot.generateVertices();
 		draw();
 	}
 
 	inline void draw() {
-		canvasSFML->clear(sf::Color{0xffffffff});
-		canvasSFML->draw(plot);
-		canvasSFML->display();
+		m_canvasPlot->clear(sf::Color{0xffffffff});
+		m_canvasPlot->draw(m_plot);
+		m_canvasPlot->display();
 	}
 
 	inline void toggleDataset(int index) {
-		plot.toggleDatasetVisibility(index);
+		m_plot.toggleDatasetVisibility(index);
 		draw();
 	}
 private:
-	tgui::CanvasSFML::Ptr canvasSFML;
-	tgui::ChildWindow::Ptr legend;
-	tgui::VerticalLayout::Ptr layout;
-	Plot plot;
+	Plot m_plot;
+	tgui::CanvasSFML::Ptr m_canvasPlot;
+
+	tgui::ChildWindow::Ptr m_legend;
+	tgui::VerticalLayout::Ptr m_layoutButtons;
 };
 }

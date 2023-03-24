@@ -85,7 +85,7 @@ int main()
     auto container = tabContainer.getPanel(0);  // A panel is a container
 
     // TODO: use the same font as the one used for TGUI, instead of using f_ariel
-    Graph::Graph graph{ container, f_ariel, "Time" };
+    graph::Graph graph{ container, f_ariel, "Time" };
 
     std::vector<float> xAxis = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
     std::vector<float> yAxis0 = { 6, 8, 12, 4, 5, 6, 5, 6, 7, 8 };
