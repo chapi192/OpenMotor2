@@ -2,21 +2,27 @@
 #include "Plot.hpp"
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <TGUI/Widgets/ChildWindow.hpp>
+#include <TGUI/Widgets/HorizontalLayout.hpp>
 #include <TGUI/Widgets/VerticalLayout.hpp>
 #include <TGUI/Widgets/ToggleButton.hpp>
 #include <vector>
 
 namespace graph {
 class Graph {
+private:
+	static const int lineLength = 10;
 public:
 	Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel = "");
 
 	void addDataSet(
 			const std::vector<float>& xAxis,
 			const std::vector<float>& yAxis,
-			const sf::Color& color,
+			const std::string& label = "",
+			const sf::Color& color = sf::Color::Black,
 			bool on = true
 	);
+
+	void updateLegend(float length);
 
 	inline void update() {
 		m_plot.scaleAxes();
@@ -39,6 +45,7 @@ private:
 	tgui::CanvasSFML::Ptr m_canvasPlot;
 
 	tgui::ChildWindow::Ptr m_legend;
-	tgui::VerticalLayout::Ptr m_layoutButtons;
+	tgui::CanvasSFML::Ptr m_canvasLegend;
+	std::vector<tgui::ToggleButton::Ptr> m_buttons;
 };
 }

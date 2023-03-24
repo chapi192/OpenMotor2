@@ -59,6 +59,9 @@ public:
 		m_size = size;
 	}
 
+	inline const std::vector<DataSet>& getDataSets() {
+		return m_dataSets;
+	}
 	inline size_t getDataSetCount() {
 		return m_dataSets.size();
 	}
