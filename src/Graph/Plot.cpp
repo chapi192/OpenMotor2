@@ -3,11 +3,40 @@
 #include <sstream>
 using namespace graph;
 
-std::string toString(const double& d, const size_t& precision) {
-	std::stringstream stream;
+std::string toString(float d, size_t precision) {
+	std::ostringstream stream;
+	if (std::abs(d) < 1)
+		precision -= 1;  // to account for the 0
 	stream.precision(precision);
-	stream << std::fixed << d;
+	stream << d;
 	return stream.str();
+}
+
+std::string toStringSci(float d, size_t precision) {
+	std::ostringstream stream;
+	stream.precision(precision - 1);  // to account for the first digit
+	stream.setf(std::ios::scientific);
+	stream << d;
+	return stream.str();
+}
+
+int scinotScalingDegree(float min, float max, size_t precision = 3) {
+	auto textMin = toStringSci(min, precision);
+	auto textMax = toStringSci(max, precision);
+	// grab the degree from the string
+	int degreeMin = std::stoi(textMin.substr(textMin.find('e') + 1));
+	int degreeMax = std::stoi(textMax.substr(textMax.find('e') + 1));
+
+	if ((degreeMin == 0 && degreeMax == 0))
+		return 0;
+
+	auto degree = degreeMax;
+	if (std::abs(min) > __FLT_EPSILON__ && degreeMin > degreeMax)
+		degree = degreeMin;
+
+	if (degree == -1)
+		return 0;
+	return degree + 1 - precision;
 }
 
 void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -69,10 +98,13 @@ void Plot::scaleAxes() {
 		}
 	}
 
-	if (xMin == INFINITY) {
+	if (yMin == INFINITY) {
 		m_min.x = 0;
-		m_min.y = 0;
+		m_min.y = -1;
 		m_max.x = 1;
+		m_max.y = 1;
+	} else if (yMin == yMax) {
+		m_min.y = -1;
 		m_max.y = 1;
 	} else {
 		m_min.x = xMin;
@@ -118,8 +150,10 @@ void Plot::generateVertices() {
 
 	/* Axes indicators */
 	m_axesIndicatorVertexArray.setPrimitiveType(sf::PrimitiveType::Lines);
+	const int precision = 3;
 	float tickLength = m_margin / 10;
 	const float xLimit = m_max.x + m_coordSteps.x / 2;
+
 	for (float x = m_min.x; x < xLimit; x += m_coordSteps.x) {
 		sf::Vector2f windowPosition = coordToWindowPosition({ x, m_min.y });
 
@@ -127,13 +161,18 @@ void Plot::generateVertices() {
 		m_axesIndicatorVertexArray.append({ { windowPosition.x, windowPosition.y + tickLength }, m_axesColor });
 
 		sf::Text indicatorText{ initText };
-		indicatorText.setString(toString(x));
+		indicatorText.setString(toString(x, precision));
 		sf::FloatRect size = indicatorText.getLocalBounds();
 		indicatorText.setOrigin(size.left + size.width / 2, size.top);
 		indicatorText.setPosition(windowPosition.x, windowPosition.y + 2 * tickLength);
 
 		m_textElementArray.push_back(indicatorText);
 	}
+
+	// get scaling for the y-axis
+	int degree = scinotScalingDegree(m_min.y, m_max.y, precision);
+	float scaling = std::pow(0.1, degree);
+
 	const float yLimit = m_max.y + m_coordSteps.y / 2;
 	for (float y = m_min.y; y < yLimit; y += m_coordSteps.y) {
 		sf::Vector2f windowPosition = coordToWindowPosition({ m_min.x, y });
@@ -142,12 +181,26 @@ void Plot::generateVertices() {
 		m_axesIndicatorVertexArray.append({ { windowPosition.x - tickLength, windowPosition.y }, m_axesColor });
 
 		sf::Text indicatorText{ initText };
-		indicatorText.setString(toString(y));
+		indicatorText.setString(toString(y * scaling, precision));
 		sf::FloatRect size = indicatorText.getLocalBounds();
 		indicatorText.setOrigin(size.left + size.width, size.top + size.height / 2);
 		indicatorText.setPosition(windowPosition.x - 2 * tickLength, windowPosition.y);
 
 		m_textElementArray.push_back(indicatorText);
+	}
+	/* y-axis sci-notation label */
+	if (degree != 0) {
+		std::string scinotStr = "e";
+		if (degree > 0)
+			scinotStr += '+';
+		scinotStr += std::to_string(degree);
+
+		sf::Text scinotLabel{ initText };
+		scinotLabel.setString(scinotStr);
+		scinotLabel.setPosition(coordToWindowPosition({ 0, m_max.y }) + sf::Vector2f{0, -0.4f * m_margin});
+		sf::FloatRect yaxisSize = scinotLabel.getLocalBounds();
+		scinotLabel.setOrigin(yaxisSize.left + yaxisSize.width, yaxisSize.top + yaxisSize.height);
+		m_textElementArray.push_back(scinotLabel);
 	}
 
 	/* Generate graphs */

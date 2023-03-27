@@ -1,14 +1,6 @@
 #pragma once
 #include "DataSet.hpp"
 
-/**
- * Creates a string representation of a double with 'precision' number of digits after comma
- * @param  d         double to convert
- * @param  precision number of digits after comma
- * @return           String representation
- */
-std::string toString(const double& d, const size_t& precision = 2);
-
 // Loosely based on https://github.com/jerr-it/SFGraphing
 namespace graph {
 class Plot : public sf::Drawable {
