@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Controllers.hpp"
 #include <TGUI/Widgets/ChildWindow.hpp>
+#include "GrainGraph.hpp"
 
 int main()
 {
@@ -69,6 +70,9 @@ int main()
     {
         gui.add(widget);
     }
+
+    GrainGraph testGrainGraph;
+
 
     ButtonController bController;
     bController.addButton({ 1.f / 2.f * WIDTH - 80, 2.f / 3.f * HEIGHT + 25 }, { 75, 25 }, "Compute");
