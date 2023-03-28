@@ -70,8 +70,12 @@ int main()
     {
         gui.add(widget);
     }
-
-    GrainGraph testGrainGraph;
+    
+    auto testContainer = tgui::ChildWindow::create();
+    testContainer->setPosition( { 100, 100 } );
+    testContainer->setSize( { 200, 200});
+    GrainGraph testGrainGraph( testContainer, {20,20}, 100);
+    gui.add(testContainer);
 
 
     ButtonController bController;
