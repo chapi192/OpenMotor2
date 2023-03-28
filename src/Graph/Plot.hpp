@@ -23,7 +23,13 @@ public:
 		const sf::Color& axesColor = sf::Color::Black
 	);
 
-	/** Function for automatically deducing axes */
+	/**
+	 * Calculates properties for autoscaling given a min and max bound.
+	 * @return { step interval, adjusted min, adjusted max }
+	 */
+	std::array<float, 3> calcAutoscale(float min, float max);
+
+	/** Scales axes according to their min and max bounds */
 	void scaleAxes();
 
 	/**
@@ -80,6 +86,8 @@ private:
 	std::string m_xAxisLabel;
 
 	sf::Color m_axesColor;
+	sf::Vector2f m_adjMin;
+	sf::Vector2f m_adjMax;
 	sf::Vector2f m_min;
 	sf::Vector2f m_max;
 	sf::Vector2f m_coordSteps;

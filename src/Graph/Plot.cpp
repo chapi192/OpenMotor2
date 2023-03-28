@@ -1,9 +1,13 @@
 #include "Plot.hpp"
 #include <cmath>
 #include <sstream>
+#include <array>
+#include <float.h>
 using namespace graph;
 
 std::string toString(float d, size_t precision) {
+	if (std::abs(d) < FLT_EPSILON)
+		return "0";
 	std::ostringstream stream;
 	if (std::abs(d) < 1)
 		precision -= 1;  // to account for the 0
@@ -31,12 +35,13 @@ int scinotScalingDegree(float min, float max, size_t precision = 3) {
 		return 0;
 
 	auto degree = degreeMax;
-	if (std::abs(min) > __FLT_EPSILON__ && degreeMin > degreeMax)
+	if (std::abs(min) > FLT_EPSILON && degreeMin > degreeMax)
 		degree = degreeMin;
 
-	if (degree == -1)
+	degree -= 1;
+	if (std::abs(degree) <= precision / 2)
 		return 0;
-	return degree + 1 - precision;
+	return degree;
 }
 
 void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -79,6 +84,27 @@ Plot::Plot(
 		m_xAxisLabel(xLabel),
 		m_axesColor(axesColor) {}
 
+std::array<float, 3> Plot::calcAutoscale(float min, float max) {
+	float range = max - min;
+
+	float logRange = std::log10(range);
+	float adjLogRange = std::floor(logRange) - 1;
+	float interval = std::pow(10, adjLogRange);
+
+	float diff = logRange - std::floor(logRange);
+	if (diff > 0.12)
+		interval *= 2;
+	if (diff > 0.4)
+		interval *= 2.5;
+	if (diff > 0.75)
+		interval *= 2;
+
+	float minAdj = interval * std::ceil (min / interval);
+	float maxAdj = interval * std::floor(max / interval);
+
+	return { interval, minAdj, maxAdj };
+}
+
 void Plot::scaleAxes() {
 	float xMin = INFINITY;
 	float yMin = INFINITY;
@@ -98,24 +124,29 @@ void Plot::scaleAxes() {
 		}
 	}
 
+	m_min.x = xMin;
+	m_min.y = yMin;
+	m_max.x = xMax;
+	m_max.y = yMax;
+
 	if (yMin == INFINITY) {
 		m_min.x = 0;
-		m_min.y = -1;
 		m_max.x = 1;
-		m_max.y = 1;
-	} else if (yMin == yMax) {
+	}
+	if (yMin == yMax || yMin == INFINITY) {
 		m_min.y = -1;
 		m_max.y = 1;
-	} else {
-		m_min.x = xMin;
-		m_min.y = yMin;
-		m_max.x = xMax;
-		m_max.y = yMax;
 	}
 
-	const int stepCount = 8;
-	m_coordSteps.x = (m_max.x - m_min.x) / stepCount;
-	m_coordSteps.y = (m_max.y - m_min.y) / stepCount;
+	auto resY = calcAutoscale(m_min.y, m_max.y);
+	m_coordSteps.y = resY[0];
+	m_adjMin.y = resY[1];
+	m_adjMax.y = resY[2];
+
+	auto resX = calcAutoscale(m_min.x, m_max.x);
+	m_coordSteps.x = resX[0];
+	m_adjMin.x = resX[1];
+	m_adjMax.x = resX[2];
 }
 
 void Plot::addDataSet(const DataSet& data_set) {
@@ -152,9 +183,9 @@ void Plot::generateVertices() {
 	m_axesIndicatorVertexArray.setPrimitiveType(sf::PrimitiveType::Lines);
 	const int precision = 3;
 	float tickLength = m_margin / 10;
-	const float xLimit = m_max.x + m_coordSteps.x / 2;
 
-	for (float x = m_min.x; x < xLimit; x += m_coordSteps.x) {
+	const float xLimit = m_adjMax.x + m_coordSteps.x / 2;
+	for (float x = m_adjMin.x; x < xLimit; x += m_coordSteps.x) {
 		sf::Vector2f windowPosition = coordToWindowPosition({ x, m_min.y });
 
 		m_axesIndicatorVertexArray.append({ windowPosition, m_axesColor });
@@ -170,11 +201,10 @@ void Plot::generateVertices() {
 	}
 
 	// get scaling for the y-axis
-	int degree = scinotScalingDegree(m_min.y, m_max.y, precision);
+	int degree = scinotScalingDegree(m_adjMin.y, m_adjMax.y, precision);
 	float scaling = std::pow(0.1, degree);
-
-	const float yLimit = m_max.y + m_coordSteps.y / 2;
-	for (float y = m_min.y; y < yLimit; y += m_coordSteps.y) {
+	const float yLimit = m_adjMax.y + m_coordSteps.y / 2;
+	for (float y = m_adjMin.y; y < yLimit; y += m_coordSteps.y) {
 		sf::Vector2f windowPosition = coordToWindowPosition({ m_min.x, y });
 
 		m_axesIndicatorVertexArray.append({ windowPosition, m_axesColor });
