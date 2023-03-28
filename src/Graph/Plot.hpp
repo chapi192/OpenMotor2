@@ -46,6 +46,10 @@ public:
 
 	void toggleDatasetVisibility(int index);
 
+	inline void setDataSetColor(int index, const sf::Color& color) {
+		m_dataSets[index].setColor(color);
+	}
+
 	inline void setAxesColor(const sf::Color& color) {
 		m_axesColor = color;
 	}

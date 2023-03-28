@@ -92,10 +92,10 @@ int main()
     std::vector<float> yAxis1 = { 5, 7, 8, 6, 4, 7, 8, 9, 11, 15 };
     std::vector<float> yAxis2 = { 2, 8, 5, 12, 3, 17, 3, 2, 5, 3 };
     std::vector<float> yAxis3 = { 3, 5, 3, 6, 7, 9, 5, 7, 6, 8 };
-    graph.addDataSet(xAxis, yAxis0, "Data 0", sf::Color::Green);
-    graph.addDataSet(xAxis, yAxis1, "Data 1 long string", sf::Color::Red);
-    graph.addDataSet(xAxis, yAxis2, "Data 2 longest string for example", sf::Color::Magenta);
-    graph.addDataSet(xAxis, yAxis3, "Data 3 shorter", sf::Color::Blue);
+    graph.addDataSet(xAxis, yAxis0, "Data 0");
+    graph.addDataSet(xAxis, yAxis1, "Data 1 long string");
+    graph.addDataSet(xAxis, yAxis2, "Data 2 longest string for example");
+    graph.addDataSet(xAxis, yAxis3, "Data 3 shorter");
     graph.update();
 
     //sf::CircleShape shape(100.f);

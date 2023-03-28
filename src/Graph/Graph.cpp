@@ -7,6 +7,8 @@ Graph::Graph(tgui::Container::Ptr container, const sf::Font& font, const std::st
 		m_legend{ tgui::ChildWindow::create("Legend", 0) },
 		m_canvasLegend{ tgui::CanvasSFML::create({ 2 * lineLength, "100%" }) }
 {
+	inUseColors.insert(inUseColors.begin(), colors.size(), false);
+
 	container->add(m_canvasPlot);
 	container->add(m_legend);
 	m_legend->add(m_canvasLegend);
@@ -20,12 +22,20 @@ void Graph::addDataSet(
 		const std::vector<float>& xAxis,
 		const std::vector<float>& yAxis,
 		const std::string& label,
-		const sf::Color& color,
-		bool on
+		bool on,
+		const sf::Color& color
 ) {
 	const int datasetID = m_plot.getDataSetCount();
 	auto str = label == "" ? "Dataset " + std::to_string(datasetID) : label;
-	DataSet set{ xAxis, yAxis, str, color, DataSet::LINE };
+	auto col = color;
+	if (color != sf::Color::Transparent)
+		dataSetUsingColor.push_back(-2);
+	else {
+		dataSetUsingColor.push_back(-1);
+		if (on)
+			col = getNextColor(datasetID);
+	}
+	DataSet set{ xAxis, yAxis, str, col, DataSet::LINE };
 	m_plot.addDataSet(set);
 
 	auto button = tgui::ToggleButton::create(str, on);

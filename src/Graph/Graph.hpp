@@ -19,9 +19,10 @@ public:
 			const std::vector<float>& xAxis,
 			const std::vector<float>& yAxis,
 			const std::string& label = "",
-			const sf::Color& color = sf::Color::Black,
-			bool on = true
+			bool on = true,
+			const sf::Color& color = sf::Color::Transparent
 	);
+
 	void updateCanvasLegend();
 
 	void updateLegend(float length);
@@ -41,7 +42,24 @@ public:
 
 	inline void toggleDataset(int index) {
 		m_plot.toggleDatasetVisibility(index);
+		if (dataSetUsingColor[index] != -2) {
+			if (m_plot.getDataSetInvisibility()[index]) {
+				inUseColors[dataSetUsingColor[index]] = false;
+				dataSetUsingColor[index] = -1;
+			} else {
+				m_plot.setDataSetColor(index, getNextColor(index));
+			}
+		}
 		update();  // TODO: make this more modular rather than needing to generate vertices every time a dataset is toggled
+	}
+private:
+	inline const sf::Color& getNextColor(int index) {
+		int i = 0;
+		while (inUseColors[i])
+			i++;
+		dataSetUsingColor[index] = i;
+		inUseColors[i] = true;
+		return colors[i];
 	}
 private:
 	Plot m_plot;
@@ -51,5 +69,22 @@ private:
 	tgui::ChildWindow::Ptr m_legend;
 	tgui::CanvasSFML::Ptr m_canvasLegend;
 	std::vector<tgui::ToggleButton::Ptr> m_buttons;
+
+	std::vector<sf::Color> colors {
+		{  25, 122, 182 },
+		{ 254, 123,   0 },
+		{  55, 158,  43 },
+		{ 212,  33,  24 },
+		{ 145, 107, 190 },
+		{ 139,  85,  73 },
+		{ 225, 122, 193 },
+		{ 127, 127, 127 },
+		{ 190, 186,  17 },
+		{  32, 191, 209 }
+	};
+	std::vector<bool> inUseColors;
+	// -2 means predefined color
+	// -1 means invisible
+	std::vector<int> dataSetUsingColor;
 };
 }
