@@ -11,6 +11,7 @@ namespace graph {
 class Graph {
 private:
 	static const int lineLength = 10;
+	static const int lineWidth = 3;
 public:
 	Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel = "");
 
@@ -21,12 +22,14 @@ public:
 			const sf::Color& color = sf::Color::Black,
 			bool on = true
 	);
+	void updateCanvasLegend();
 
 	void updateLegend(float length);
 
 	inline void update() {
 		m_plot.scaleAxes();
 		m_plot.generateVertices();
+		updateCanvasLegend();
 		draw();
 	}
 
@@ -42,6 +45,7 @@ public:
 	}
 private:
 	Plot m_plot;
+	float m_heightOffset;
 	tgui::CanvasSFML::Ptr m_canvasPlot;
 
 	tgui::ChildWindow::Ptr m_legend;

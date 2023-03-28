@@ -44,14 +44,34 @@ void Graph::addDataSet(
 	updateLegend(length);
 }
 
+void Graph::updateCanvasLegend() {
+	m_canvasLegend->clear(sf::Color{0xf0f0f0ff});
+
+	auto& dataSets = m_plot.getDataSets();
+	auto& invisibility = m_plot.getDataSetInvisibility();
+
+	auto position = tgui::Vector2f{ 0.5f * lineLength, 0.5f * m_heightOffset - lineWidth / 2};
+	for (size_t i = 0; i != dataSets.size(); i++, position.y += m_heightOffset) {
+		if (invisibility[i])
+			continue;
+		sf::RectangleShape rect;
+		rect.setFillColor(dataSets[i].getColor());
+		rect.setSize({ lineLength, lineWidth });
+		rect.setPosition(position);
+		m_canvasLegend->draw(rect);
+	}
+
+	m_canvasLegend->display();
+}
+
 void Graph::updateLegend(float length) {
 	float buttonLength = length;
 	length += m_canvasLegend->getSize().x;
 	if (length < m_legend->getClientSize().x)
 		length = m_legend->getClientSize().x;
 
-	float heightOffset = m_buttons[0]->getSize().y - 1;
-	float height = heightOffset * m_buttons.size();
+	m_heightOffset = m_buttons[0]->getSize().y - 1;
+	float height = m_heightOffset * m_buttons.size();
 	m_legend->setClientSize({length - 1, height - 1});
 
 	auto distanceToBottomRight = m_canvasPlot->getSize() - (m_legend->getPosition() + m_legend->getSize());
@@ -59,19 +79,5 @@ void Graph::updateLegend(float length) {
 	distanceToBottomRight.y = distanceToBottomRight.y < 0 ? distanceToBottomRight.y : 0;
 	m_legend->setPosition(m_legend->getPosition() + distanceToBottomRight);
 
-	m_canvasLegend->clear(sf::Color{0xf0f0f0ff});
-
-	auto& dataSets = m_plot.getDataSets();
-	auto position = tgui::Vector2f{ 0.5f * lineLength, 0.5f * heightOffset};
-	sf::VertexArray arr{ sf::PrimitiveType::Lines, 2 * dataSets.size() };
-	for (auto& dataSet : dataSets) {
-		arr.append({position, dataSet.getColor()});
-		position.x += lineLength;
-		arr.append({position, dataSet.getColor()});
-		position.x -= lineLength;
-		position.y += heightOffset;
-	}
-	m_canvasLegend->draw(arr);
-
-	m_canvasLegend->display();
+	updateCanvasLegend();
 }

@@ -57,6 +57,10 @@ public:
 		m_size = size;
 	}
 
+	inline const std::vector<bool>& getDataSetInvisibility() {
+		return m_dataSetInvisible;
+	}
+
 	inline const std::vector<DataSet>& getDataSets() {
 		return m_dataSets;
 	}
