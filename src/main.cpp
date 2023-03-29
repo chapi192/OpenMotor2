@@ -6,6 +6,8 @@
 #include "Controllers.hpp"
 #include <TGUI/Widgets/ChildWindow.hpp>
 
+#include "Graph/Graph.hpp"
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "OpenMotor2");
@@ -24,7 +26,7 @@ int main()
     txt_temp.setPosition((WIDTH / 2) - (txt_temp.getGlobalBounds().width / 2), HEIGHT / 2);
 
     TabContainerController tcController;
-    tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 2 * HEIGHT / 3}, { "Graph", "Grain" });
+    tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 20 * HEIGHT / 31}, { "Graph", "Grain" });
     tcController.addTabContainer({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Input" });
     tcController.addTabContainer({ WIDTH / 2, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Output" });
     tcController.addTabContainer({ 2 * WIDTH / 3, HEIGHT / 40 }, { 37 * WIDTH / 120, 77 * HEIGHT / 120 }, { "File" });
@@ -77,7 +79,24 @@ int main()
     {
         gui.add(button);
     }
-        
+
+    auto& tabContainer = *tcController.getTabContainers()[0];
+    tabContainer.select(0);  // To select the "Graph" panel
+    auto container = tabContainer.getPanel(0);  // A panel is a container
+
+    // TODO: use the same font as the one used for TGUI, instead of using f_ariel
+    graph::Graph graph{ container, f_ariel, "Time" };
+
+    std::vector<float> xAxis = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    std::vector<float> yAxis0 = { 6, 8, 12, 4, 5, 6, 5, 6, 7, 8 };
+    std::vector<float> yAxis1 = { 5, 7, 8, 6, 4, 7, 8, 9, 11, 15 };
+    std::vector<float> yAxis2 = { 2, 8, 5, 12, 3, 17, 3, 2, 5, 3 };
+    std::vector<float> yAxis3 = { 3, 5, 3, 6, 7, 9, 5, 7, 6, 8 };
+    graph.addDataSet(xAxis, yAxis0, "Data 0");
+    graph.addDataSet(xAxis, yAxis1, "Data 1 long string");
+    graph.addDataSet(xAxis, yAxis2, "Data 2 longest string for example");
+    graph.addDataSet(xAxis, yAxis3, "Data 3 shorter", 0);
+    graph.update();
 
     //sf::CircleShape shape(100.f);
     //shape.setFillColor(sf::Color::Green);
@@ -87,7 +106,7 @@ int main()
         window.clear(sf::Color(0xf0f0f0ff));
 
         sf::Event event;
-        
+
         while (window.pollEvent(event))
         {
             gui.handleEvent(event);
