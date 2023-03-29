@@ -11,19 +11,16 @@
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "OpenMotor2");
+    window.setVerticalSyncEnabled(true);
     tgui::Gui gui{window};
 
     sf::Font f_ariel;
-    if (!f_ariel.loadFromFile("../data/arial.ttf")) {
-        //damn...
+    auto font_path = "../data/arial.ttf";
+    if (!f_ariel.loadFromFile(font_path)) {
+        std::string msg = "Failed to load ";
+        msg += font_path;
+        throw std::runtime_error{ msg };
     }
-
-    sf::Text txt_temp;
-    txt_temp.setCharacterSize(16);
-    txt_temp.setFillColor(sf::Color::Black);
-    txt_temp.setFont(f_ariel);
-    txt_temp.setString("Hello World!");
-    txt_temp.setPosition((WIDTH / 2) - (txt_temp.getGlobalBounds().width / 2), HEIGHT / 2);
 
     TabContainerController tcController;
     tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 20 * HEIGHT / 31}, { "Graph", "Grain" });
@@ -98,9 +95,6 @@ int main()
     graph.addDataSet(xAxis, yAxis3, "Data 3 shorter", 0);
     graph.update();
 
-    //sf::CircleShape shape(100.f);
-    //shape.setFillColor(sf::Color::Green);
-
     while (window.isOpen())
     {
         window.clear(sf::Color(0xf0f0f0ff));
@@ -115,8 +109,6 @@ int main()
                 window.close();
         }
 
-
-        window.draw(txt_temp);
         gui.draw();
         window.display();
     }
