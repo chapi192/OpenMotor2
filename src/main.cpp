@@ -95,7 +95,7 @@ int main()
     graph.addDataSet(xAxis, yAxis0, "Data 0");
     graph.addDataSet(xAxis, yAxis1, "Data 1 long string");
     graph.addDataSet(xAxis, yAxis2, "Data 2 longest string for example");
-    graph.addDataSet(xAxis, yAxis3, "Data 3 shorter");
+    graph.addDataSet(xAxis, yAxis3, "Data 3 shorter", 0);
     graph.update();
 
     //sf::CircleShape shape(100.f);

@@ -42,12 +42,14 @@ public:
 
 	inline void toggleDataset(int index) {
 		m_plot.toggleDatasetVisibility(index);
-		if (dataSetUsingColor[index] != -2) {
-			if (m_plot.getDataSetInvisibility()[index]) {
-				inUseColors[dataSetUsingColor[index]] = false;
-				dataSetUsingColor[index] = -1;
-			} else {
+		auto& idx = dataSetUsingColor[index];
+		if (idx != -2) {
+			if (!m_plot.getDataSetInvisibility()[index]) {
 				m_plot.setDataSetColor(index, getNextColor(index));
+			} else if (idx != -1) {
+				if (idx < inUseColors.size())
+					inUseColors[idx] = false;
+				idx = -1;
 			}
 		}
 		update();  // TODO: make this more modular rather than needing to generate vertices every time a dataset is toggled
@@ -55,8 +57,10 @@ public:
 private:
 	inline const sf::Color& getNextColor(int index) {
 		int i = 0;
-		while (inUseColors[i])
+		while (i < inUseColors.size() && inUseColors[i])
 			i++;
+		if (i == inUseColors.size())
+			return colors[i - 1];
 		dataSetUsingColor[index] = i;
 		inUseColors[i] = true;
 		return colors[i];
@@ -78,9 +82,9 @@ private:
 		{ 145, 107, 190 },
 		{ 139,  85,  73 },
 		{ 225, 122, 193 },
-		{ 127, 127, 127 },
 		{ 190, 186,  17 },
-		{  32, 191, 209 }
+		{  32, 191, 209 },
+		{ 160, 160, 160 }
 	};
 	std::vector<bool> inUseColors;
 	// -2 means predefined color
