@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "SimData.hpp"
-#include "Grains/EndBurning.hpp"
+#include "Grains/Tube.hpp"
 #include "Nozzle.hpp"
 #include "Propellant.hpp"
 
@@ -19,25 +19,25 @@ namespace motor {
 class Motor {
 public:
 	Motor() {
-		m_grains.push_back(std::make_unique<EndBurningGrain>(0.1524, 0.0635));
+		m_grains.push_back(std::make_unique<TubeGrain>(0.1397, 0.08306, PerforatedGrain::NEITHER, 0.03175));
 
 		Propellant::Properties prop;
 		prop.minPressure       = 0;
 		prop.maxPressure       = 10342500;
-		prop.burnCoeff         = 0.000247;
-		prop.burnExp           = 0.287;
-		prop.specificHeatRatio = 1.229;
-		prop.combustTemp       = 2780;
+		prop.burnCoeff         = 3.517054e-5;
+		prop.burnExp           = 0.3273;
+		prop.specificHeatRatio = 1.21;
+		prop.combustTemp       = 3500;
 		prop.exhaustMolarMass  = 23.669;
 		m_propellant.addProperties(prop);
-		m_propellant.m_density = 1641.417986;
+		m_propellant.m_density = 1680.0037645;
 
 		m_nozzle.m_convHAngle   = 65.0;
 		m_nozzle.m_divHAngle    = 15.0;
 		m_nozzle.m_efficiency   = 0.9;
-		m_nozzle.m_diaExit      = 0.01778;
-		m_nozzle.m_diaThroat    = 0.006350;
-		m_nozzle.m_throatLength = 0.001270;
+		m_nozzle.m_diaExit      = 0.034925;
+		m_nozzle.m_diaThroat    = 0.01397;
+		m_nozzle.m_throatLength = 0.00381;
 		m_nozzle.m_slagCoeff    = 0;
 		m_nozzle.m_erosionCoeff = 0;
 	}
