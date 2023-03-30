@@ -1,5 +1,5 @@
 #pragma once
-#include "PerforatedGrain.hpp"
+#include "Perforated.hpp"
 #include <stdexcept>
 
 namespace motor {
