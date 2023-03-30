@@ -5,11 +5,22 @@
 #include "Util.hpp"
 using namespace geo;
 
-#include <iostream>
-
 namespace motor {
 class Nozzle {
 public:
+	static float expansionRatioFromPressureRatio(float exitPressure, float inPressure, float k) {
+		const float pRatio = exitPressure / inPressure;
+		float term1 = std::pow((k + 1) / 2, 1 / (k - 1));
+		float term2 = std::pow(pRatio, 1 / k);
+		float term3 = (k + 1) / (k - 1);
+		float term4 = 1 - std::pow(pRatio, (k - 1) / k);
+		return term1 * term2 * std::sqrt(term3 * term4);
+	}
+
+	inline float calcExpansion() const {
+		return std::pow(m_diaExit / m_diaThroat, 2);
+	}
+
 	inline float calcThroatArea(float dThroat=0) const {
 		return circleArea(m_diaThroat + dThroat);
 	}
@@ -18,11 +29,8 @@ public:
 		return circleArea(m_diaExit);
 	}
 
-	// TODO: calc exitPressure by solving for outPressure in the expansion ratio from pressure ratio function
 	inline float calcExitPressure(float k, float inPressure) const {
-		if (inPressure == 0)
-			return 0;
-		return 83383.8;  // currently what the outpressure would be with the constant inPressure from the endburning grain
+		return fSolve_NewtonRaphson(1 / calcExpansion(), 0, 1, expansionRatioFromPressureRatio, inPressure, k);
 	}
 
 	inline float calcDivergenceLosses() const {
