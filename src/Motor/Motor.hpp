@@ -23,7 +23,7 @@ public:
 
 		Propellant::Properties prop;
 		prop.minPressure       = 0;
-		prop.maxPressure       = 10342,500;
+		prop.maxPressure       = 10342500;
 		prop.burnCoeff         = 0.000247;
 		prop.burnExp           = 0.287;
 		prop.specificHeatRatio = 1.229;
@@ -44,6 +44,8 @@ public:
 
 	SimData burn() {
 		const auto grainSize = m_grains.size();
+		for (auto& grain : m_grains)
+			grain->simulationPrep();
 
 		unique_ptr<float> massSPtr    { new float[grainSize]{} };
 		unique_ptr<float> massFlowSPtr{ new float[grainSize]{} };
@@ -95,7 +97,7 @@ public:
 				if (grain.calcWebLeft(reg[i]) > BURNOUT_WEB_THRES) {
 					// Calculate change in regression at the current pressure
 					float dReg = dt * m_propellant.calcBurnRate(sim.m_pressure.back());
-					// Find the mass flux through the grain based on the mass flow fed into from m_grains above it
+					// Find the mass flux through the grain based on the mass flow fed into from grains above it
 					massFlux[i] = grain.calcPeakMassFlux(currMassFlow, dt, reg[i], dReg, propDensity);
 					// Find the mass of the grain after regression
 					float newMass = grain.calcVolumeAtRegression(reg[i]) * propDensity;

@@ -39,10 +39,10 @@ public:
 		return calcGrainBoundingVolume() - calcVolumeAtRegression(reg);
 	}
 
-	virtual float calcMassFlux(float massIn, float dTime, float reg, float dReg, float position, float density) const = 0;
+	virtual float calcMassFlux(float massFlowIn, float dTime, float reg, float dReg, float position, float density) const = 0;
 
-	inline float calcPeakMassFlux(float massIn, float dTime, float reg, float dReg, float density) const {
-		return calcMassFlux(massIn, dTime, reg, dReg, calcEndPositions(reg)[1], density);
+	inline float calcPeakMassFlux(float massFlowIn, float dTime, float reg, float dReg, float density) const {
+		return calcMassFlux(massFlowIn, dTime, reg, dReg, calcEndPositions(reg)[1], density);
 	}
 protected:
 	float m_length;

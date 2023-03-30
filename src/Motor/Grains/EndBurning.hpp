@@ -9,7 +9,7 @@ namespace motor {
 class EndBurningGrain : public Grain {
 public:
 	EndBurningGrain(float length, float diameter) :
-			Grain{ length, diameter } {}
+			Grain( length, diameter ) {}
 
 	virtual std::array<float, 2> calcEndPositions(float reg) const {
 		return {0, m_length - reg};
@@ -32,7 +32,7 @@ public:
 		return cylinderVolume(m_diameter, regLength);
 	}
 
-	virtual float calcMassFlux(float massIn, float dt, float reg, float dReg, float position, float density) const {
+	virtual float calcMassFlux(float massFlowIn, float dt, float reg, float dReg, float position, float density) const {
 		return 0;
 	}
 };
