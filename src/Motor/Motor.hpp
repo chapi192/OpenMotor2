@@ -19,25 +19,24 @@ namespace motor {
 class Motor {
 public:
 	Motor() {
-		m_grains.push_back(std::make_unique<TubeGrain>(0.1397, 0.08306, PerforatedGrain::NEITHER, 0.03175));
+		m_grains.push_back(std::make_unique<TubeGrain>(0.079375, 0.044831, PerforatedGrain::NEITHER, 0.015875));
+		m_grains.push_back(std::make_unique<TubeGrain>(0.079375, 0.044831, PerforatedGrain::NEITHER, 0.015875));
+		m_grains.push_back(std::make_unique<TubeGrain>(0.079375, 0.044831, PerforatedGrain::NEITHER, 0.015875));
 
-		Propellant::Properties prop;
-		prop.minPressure       = 0;
-		prop.maxPressure       = 10342500;
-		prop.burnCoeff         = 3.517054e-5;
-		prop.burnExp           = 0.3273;
-		prop.specificHeatRatio = 1.21;
-		prop.combustTemp       = 3500;
-		prop.exhaustMolarMass  = 23.669;
-		m_propellant.addProperties(prop);
-		m_propellant.m_density = 1680.0037645;
+		m_propellant.addProperties(Propellant::Properties{  103425.0,  806715.0, 1.9253259619746373e-06,   0.625, 1.1361, 1520, 39.9 });
+		m_propellant.addProperties(Propellant::Properties{  806715.0, 1503110.0,     0.6656608561590813,  -0.313, 1.1361, 1520, 39.9 });
+		m_propellant.addProperties(Propellant::Properties{ 1503110.0, 3792250.0,   0.009528121181782798, -0.0145, 1.1361, 1520, 39.9 });
+		m_propellant.addProperties(Propellant::Properties{ 3792250.0, 7032900.0,  2.709667768835332e-06,  0.5245, 1.1361, 1520, 39.9 });
+		m_propellant.addProperties(Propellant::Properties{ 7032900.0,10673460.0,    0.00417677261069904,   0.059, 1.1361, 1520, 39.9 });
+
+		m_propellant.m_density = 1750;
 
 		m_nozzle.m_convHAngle   = 65.0;
 		m_nozzle.m_divHAngle    = 15.0;
 		m_nozzle.m_efficiency   = 0.9;
-		m_nozzle.m_diaExit      = 0.034925;
-		m_nozzle.m_diaThroat    = 0.01397;
-		m_nozzle.m_throatLength = 0.00381;
+		m_nozzle.m_diaExit      = 0.0254;
+		m_nozzle.m_diaThroat    = 0.009144;
+		m_nozzle.m_throatLength = 0.00127;
 		m_nozzle.m_slagCoeff    = 0;
 		m_nozzle.m_erosionCoeff = 0;
 	}
@@ -180,17 +179,30 @@ public:
 	}
 
 	float calcIdealPressure(float kn) {
-		for (auto& prop : m_propellant.m_propArray) {
+		std::vector<std::pair<float, float>> propPressures;
+		for (size_t i = 0; i != m_propellant.m_propArray.size(); i++) {
+			auto& prop = m_propellant.m_propArray[i];
 			float num = kn * m_propellant.m_density * prop.burnCoeff;
 			float exponent = 1 / (1 - prop.burnExp);
 			auto& k = prop.specificHeatRatio;
 			float denom = std::sqrt((k / ((GAS_CONSTANT / prop.exhaustMolarMass) * prop.combustTemp)) * std::pow(2 / (k + 1), (k + 1) / (k - 1)));
 			float propPressure = std::pow(num / denom, exponent);
 
-			// TODO: Account for multiple pressure ranges
-			return propPressure;
+			bool toReturn = i == 0 && propPressure < prop.maxPressure;  // is below the min pressure
+			toReturn |= i == m_propellant.m_propArray.size() - 1 && propPressure > prop.minPressure;  // is above the max pressure
+			toReturn |= prop.minPressure < propPressure && propPressure < prop.maxPressure;  // is inbetween bounds
+			if (toReturn)
+				return propPressure;
+			propPressures.push_back({ std::min(std::abs(prop.minPressure - propPressure), std::abs(prop.maxPressure - propPressure)), propPressure });
 		}
-		return 0;
+
+		std::pair<float, float> propPressure{ INFINITY, 0 };
+		for (auto& prop : propPressures) {
+			if (prop.first < propPressure.first)
+				propPressure = prop;
+		}
+
+		return propPressure.second;
 	}
 private:
 	Nozzle m_nozzle;

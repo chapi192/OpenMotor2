@@ -13,16 +13,46 @@ public:
 		float specificHeatRatio;
 		float combustTemp;
 		float exhaustMolarMass;
+		Properties(
+				float minPressure, float maxPressure,
+				float burnCoeff, float burnExp,
+				float specificHeatRatio,
+				float combustTemp,
+				float exhaustMolarMass
+		) :
+				minPressure{ minPressure }, maxPressure{ maxPressure },
+				burnCoeff{ burnCoeff }, burnExp{ burnExp },
+				specificHeatRatio{ specificHeatRatio },
+				combustTemp      { combustTemp },
+				exhaustMolarMass { exhaustMolarMass } {}
 	};
 public:
-	// TODO: Should keep the array sorted from minPressure to maxPressure.
+	/** Keeps the array sorted from minPressure to maxPressure. */
 	inline void addProperties(const Properties& prop) {
-		m_propArray.push_back(prop);
+		auto iter{ m_propArray.begin() };
+		while (iter != m_propArray.end()) {
+			if (iter->minPressure > prop.minPressure)
+				break;
+			iter++;
+		}
+		m_propArray.insert(iter, prop);
 	}
 
-	// TODO: Account for multiple properties in the array
 	inline const Properties& getCombustionProperties(float pressure) const {
-		return m_propArray[0];
+		if (pressure < m_propArray[0].minPressure)
+			return m_propArray[0];
+
+		int i = 0;
+		while (i != m_propArray.size() && pressure > m_propArray[i].maxPressure)
+			i++;
+
+		if (i == m_propArray.size())
+			return m_propArray.back();
+		if (pressure > m_propArray[i].minPressure)
+			return m_propArray[i];
+		if (m_propArray[i].minPressure - pressure < pressure - m_propArray[i - 1].maxPressure)
+			return m_propArray[i];
+		return m_propArray[i - 1];
 	}
 
 	inline float calcBurnRate(float pressure) const {
