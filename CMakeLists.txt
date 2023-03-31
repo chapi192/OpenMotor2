@@ -37,3 +37,16 @@ target_link_libraries(${PROJECT_NAME}
 	winmm
 	gdi32
 )
+
+# tests creation
+file(GLOB_RECURSE SOURCES_TEST ${PROJECT_SOURCE_DIR}/tests/*.cpp)
+file(GLOB_RECURSE HEADERS_TEST  # to have headers in the VS Header Files filter
+	${PROJECT_SOURCE_DIR}/tests/*.h
+	${PROJECT_SOURCE_DIR}/tests/*.hpp
+)
+add_executable(tests ${SOURCES_TEST} ${HEADERS_TEST})
+
+target_include_directories(tests PUBLIC
+	src
+	tests
+)
