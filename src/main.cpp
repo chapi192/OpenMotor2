@@ -7,10 +7,15 @@
 #include <TGUI/Widgets/ChildWindow.hpp>
 #include "GrainGraph.hpp"
 
+float tofloat(std::string);
+GrainGeometry toGrainGeometry(std::string);
+std::string toLower(std::string);
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "OpenMotor2");
     tgui::Gui gui{window};
+    window.setVerticalSyncEnabled(true);
 
     sf::Font f_ariel;
     if (!f_ariel.loadFromFile("../data/arial.ttf")) {
@@ -43,6 +48,13 @@ int main()
     slController.addSeparatorLine({ 2 * WIDTH / 3 - 1, HEIGHT / 40 }, { 2, 77 * HEIGHT / 120 }); // graph/grain and file
     slController.addSeparatorLine({ WIDTH / 2 - 1, 2 * HEIGHT / 3 }, { 2, 37 * HEIGHT / 120 }); // input and output
     slController.addSeparatorLine({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 20, 2 }); // input/output and grain/graph/file
+    auto tempContainer = tcController.getTabContainers()[0];
+    slController.addSeparatorLine({0.25f * tempContainer->getSize().x + tempContainer->getPosition().x, tempContainer->getPosition().y + tempContainer->getTabs()->getSize().y},
+                                  {1, tempContainer->getSize().y - tempContainer->getTabs()->getSize().y});
+    
+    tempContainer->select(1);
+    tempContainer->getPanel(0)->add(slController.getSeparatorLines()[7]);
+
 
     for (tgui::SeparatorLine::Ptr separatorLine : slController.getSeparatorLines())
     {
@@ -55,7 +67,14 @@ int main()
     textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 60 }, { 50, 25 }, "testing");
     textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 90 }, { 50, 25 });
     textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 120 }, { 50, 25 });
-
+    tempContainer = tcController.getTabContainers()[0];
+    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 30 }, { 75, 20 });
+    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 60 }, { 75, 20 });
+    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 90 }, { 75, 20 });
+    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 120 }, { 75, 20 });
+    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 150 }, { 75, 20 });
+    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 180 }, { 75, 20 });
+    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 210 }, { 75, 20 });
     for (auto& textInput : textInputController.getTextInputs()) {
         gui.add(textInput);
     }
@@ -70,13 +89,6 @@ int main()
     {
         gui.add(widget);
     }
-    
-    auto testContainer = tgui::ChildWindow::create();
-    testContainer->setPosition( { 100, 100 } );
-    testContainer->setSize( { 200, 200});
-    GrainGraph testGrainGraph( testContainer, {20,20}, 100);
-    gui.add(testContainer);
-
 
     ButtonController bController;
     bController.addButton({ 1.f / 2.f * WIDTH - 80, 2.f / 3.f * HEIGHT + 25 }, { 75, 25 }, "Compute");
@@ -85,6 +97,22 @@ int main()
     {
         gui.add(button);
     }
+
+    auto tabContainer = tcController.getTabContainers()[0];
+    tabContainer->select(1);
+    auto container = tabContainer->getPanel(0);
+    GrainGraph testGrainGraph(container, { 20,20 }, 100);
+    testGrainGraph.updateGrainDepth(1);
+    testGrainGraph.updateGrainRadius(0.5);
+    testGrainGraph.updateGrainGeometry(TUBE);
+
+    auto textBoxes = textInputController.getTextInputs();
+    textBoxes[4]->onTextChange([&]{ testGrainGraph.updateGrainRadius(tofloat((std::string)textBoxes[4]->getText())); }); // update grain radius
+    textBoxes[5]->onTextChange([&]{ testGrainGraph.updateGrainDepth(tofloat((std::string)textBoxes[5]->getText())); }); // update grain depth
+    textBoxes[6]->onTextChange([&]{ testGrainGraph.updateGrainGeometry(toGrainGeometry((std::string)textBoxes[6]->getText())); }); // update grain geometry
+    textBoxes[7]->onTextChange([&]{ testGrainGraph.updateInnerGrainRadius(tofloat((std::string)textBoxes[7]->getText())); }); // update inner inner grain radius
+    textBoxes[8]->onTextChange([&]{ testGrainGraph.updateOuterGrainRadius(tofloat((std::string)textBoxes[8]->getText())); }); // update outer inner grain radius
+    textBoxes[9]->onTextChange([&]{ testGrainGraph.updateNumSpecializations(tofloat((std::string)textBoxes[9]->getText())); }); // update specialization amount
         
 
     //sf::CircleShape shape(100.f);
@@ -111,4 +139,69 @@ int main()
     }
 
     return 0;
+}
+
+float tofloat(std::string number)
+{
+    float output = 0;
+
+    int decimalIdx = number.length();
+
+    for (int idx = 0; idx < number.length(); idx++) {
+        if (number[idx] == '.') {
+            decimalIdx = idx;
+            break;
+        }
+    }
+    for (int idx = 0; idx < number.length(); idx++) {
+        char c = number[idx];
+        if (c >= '0' && c <= '9') {
+            if (idx < decimalIdx)
+                output += (double)(c - 48) * pow(10, decimalIdx - idx - 1);
+            else
+                output += (double)(c - 48) * pow(10, decimalIdx - idx);
+        }
+    }
+
+    return output;
+}
+
+GrainGeometry toGrainGeometry(std::string geom)
+{
+    GrainGeometry grainGeom = TUBE;
+    geom = toLower(geom);
+    
+    if (geom == "tube")
+        grainGeom = TUBE;
+    else if (geom == "tube and rod")
+        grainGeom = TUBE_AND_ROD;
+    else if (geom == "star")
+        grainGeom = STAR;
+    else if (geom == "dog bone")
+        grainGeom = DOG_BONE;
+    else if (geom == "multiperforated")
+        grainGeom = MULTIPERFORATED;
+    else if (geom == "dendrite")
+        grainGeom = DENDRITE;
+    else if (geom == "wagon wheel")
+        grainGeom = WAGON_WHEEL;
+    else if (geom == "multifin")
+        grainGeom = MULTIFIN;
+    else if (geom == "double anchor")
+        grainGeom = DOUBLE_ANCHOR;
+    else if (geom == "grate")
+        grainGeom = GRATE;
+    else
+        std::cout << "GrainGeometry invalid - defaulted to TUBE" << std::endl;
+
+    return grainGeom;
+}
+
+std::string toLower(std::string str)
+{
+    std::string retStr = "";
+    for (char c : str) {
+        retStr += tolower(c);
+    }
+    return retStr;
 }
