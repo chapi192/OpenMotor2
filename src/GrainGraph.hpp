@@ -25,7 +25,23 @@ public:
 
 	void update();
 
-	void updateGrain(float grainRadius, float grainDepth, float innerRadius, float outerRadius, int numSpecializations, GrainGeometry geometry);
+	inline void updateGrainRadius(float grainRadius){ m_grain.setGrainRadius(grainRadius); 
+													  update(); }
+
+	inline void updateGrainDepth(float grainDepth){ m_grain.setGrainDepth(grainDepth); 
+												    update(); }
+	
+	inline void updateInnerGrainRadius(float innerRadius){ m_grain.setGeometryRadiusInner(innerRadius);
+														   update(); }
+	
+	inline void updateOuterGrainRadius(float outerRadius){ m_grain.setGeometryRadiusOuter(outerRadius);
+														   update(); }
+	
+	inline void updateNumSpecializations(int numSpecializations){ m_grain.setNumberOfSpecializations(numSpecializations);
+																  update(); }
+	
+	inline void updateGrainGeometry(GrainGeometry geometry){ m_grain.setGeometry(geometry);
+															 update(); }
 
 private:
 	Grain m_grain;
