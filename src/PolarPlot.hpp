@@ -10,7 +10,7 @@
 class PolarPlot : public sf::Drawable
 {
 public:
-	PolarPlot(sf::Vector2f position, Grain& grain, float length = 50, float margin = 5, const sf::Color& plot = sf::Color::White, const sf::Color& vertex = sf::Color::Black);
+	PolarPlot(sf::Vector2f position, Grain& grain, float length = 50, float margin = 5, const sf::Color& plot = sf::Color::Green, const sf::Color& vertex = sf::Color::Black);
 
 	void generateVertices(Grain& grain);
 
@@ -20,6 +20,8 @@ public:
 	void setSize(float length) { m_size = { length, length }; }
 	
 	void setPosition(sf::Vector2f position) { m_position = {position.x, position.y}; }
+
+	void setPlotColor(sf::Color color) { m_plotColor = color; }
 
 	sf::Vector2f getSize() const { return m_size; }
 
