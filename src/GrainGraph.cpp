@@ -1,5 +1,6 @@
 #include "GrainGraph.hpp"
 #include <cmath>
+#include <iostream>
 
 const float PI = 3.14159265;
 
@@ -9,10 +10,10 @@ GrainGraph::GrainGraph(tgui::Container::Ptr container, sf::Vector2f posInContain
 {
 	container->add(m_grainCanvas);
 
-	m_grainCanvas->setPosition(container->getPosition());
+	m_grainCanvas->setPosition( {posInContainer.x, posInContainer.y} );
 	sf::Vector2f containerSize = container->getSize();
 	//float smallestLength = containerSize.x < containerSize.y ? containerSize.x : containerSize.y;
-	//m_grainCanvas->setSize(smallestLength, smallestLength);
+	m_grainCanvas->setSize(length, length);
 }
 
 //GrainGraph::~GrainGraph() = default;
@@ -31,16 +32,11 @@ int GrainGraph::getPenSize() { return m_penSize; }
 void GrainGraph::update() 
 {
 	m_plot.clearVertices();
+	std::cout << "Vertices were cleared" << std::endl;
 	m_plot.generateVertices(m_grain);
+	std::cout << "Vertices were generated" << std::endl;
 	draw();
+	std::cout << "Vertices were drawn" << std::endl;
 }
 
-void GrainGraph::updateGrain(float grainRadius, float grainDepth, float innerRadius, float outerRadius, int numSpecializations, GrainGeometry geometry)
-{
-	m_grain.setGrainRadius(grainRadius);
-	m_grain.setGrainDepth(grainDepth);
-	m_grain.setGeometryRadiusInner(innerRadius);
-	m_grain.setGeometryRadiusOuter(outerRadius);
-	m_grain.setNumberOfSpecializations(numSpecializations);
-	m_grain.setGeometry(geometry);
-}
+
