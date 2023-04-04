@@ -1,4 +1,5 @@
 #include "PolarPlot.hpp"
+#include <iostream>
 #include <cmath>
 
 const float PI = 3.14159265;
@@ -19,6 +20,11 @@ PolarPlot::PolarPlot(
 { 
 	m_center = { position.x - m_size.x / 2, position.y - m_size.y / 2 }; 
 	m_slices = (length - 2 * margin) / ( 10.f / 9.f );
+	m_vertexColor = sf::Color{0x00FF00};
+	sf::RectangleShape shape(m_size);
+	shape.setPosition(m_position);
+	shape.setOutlineColor(sf::Color::Black);
+	shape.setOutlineThickness(2);
 }
 
 void PolarPlot::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -66,8 +72,9 @@ void PolarPlot::calculatePolarCoords(Grain& grain)
 			m_polarVertexPosition.emplace_back(polarCoord);
 
 		}
+		break;
 	default:
-		
+		std::cout << "INVALID GRAIN GEOMETRY" << std::endl;
 		break;
 	}
 }
