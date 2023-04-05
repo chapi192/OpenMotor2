@@ -53,14 +53,13 @@ int main()
                                   {1, tempContainer->getSize().y - tempContainer->getTabs()->getSize().y});
     
     tempContainer->select(1);
-    tempContainer->getPanel(0)->add(slController.getSeparatorLines()[7]);
+    tempContainer->getPanel(1)->add(slController.getSeparatorLines()[7]);
 
 
     for (tgui::SeparatorLine::Ptr separatorLine : slController.getSeparatorLines())
     {
         gui.add(separatorLine);
     }
-
 
     TextInputController textInputController;
     textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 30 }, { 50, 25 });
@@ -100,8 +99,8 @@ int main()
 
     auto tabContainer = tcController.getTabContainers()[0];
     tabContainer->select(1);
-    auto container = tabContainer->getPanel(0);
-    GrainGraph testGrainGraph(container, { 20,20 }, 100);
+    auto container = tabContainer->getPanel(1);
+    GrainGraph testGrainGraph(container, { 0.25f * container->getSize().x + 20, 20}, 100);
     testGrainGraph.updateGrainDepth(1);
     testGrainGraph.updateGrainRadius(0.5);
     testGrainGraph.updateGrainGeometry(TUBE);
@@ -113,7 +112,16 @@ int main()
     textBoxes[7]->onTextChange([&]{ testGrainGraph.updateInnerGrainRadius(tofloat((std::string)textBoxes[7]->getText())); }); // update inner inner grain radius
     textBoxes[8]->onTextChange([&]{ testGrainGraph.updateOuterGrainRadius(tofloat((std::string)textBoxes[8]->getText())); }); // update outer inner grain radius
     textBoxes[9]->onTextChange([&]{ testGrainGraph.updateNumSpecializations(tofloat((std::string)textBoxes[9]->getText())); }); // update specialization amount
-        
+
+    testGrainGraph.getCanvas()->onClick([&textBoxes, &testGrainGraph]
+    {
+        textBoxes[4]->setText(std::to_string(testGrainGraph.retrieveGrainRadius()));
+        textBoxes[5]->setText(std::to_string(testGrainGraph.retrieveGrainDepth()));
+        textBoxes[6]->setText(testGrainGraph.retrieveGrainGeometry());
+        textBoxes[7]->setText(std::to_string(testGrainGraph.retrieveInnerGeometryRadius()));
+        textBoxes[8]->setText(std::to_string(testGrainGraph.retrieveOuterGeometryRadius()));
+        textBoxes[9]->setText(std::to_string(testGrainGraph.retrieveNumSpecializations()));
+    } );        
 
     //sf::CircleShape shape(100.f);
     //shape.setFillColor(sf::Color::Green);
