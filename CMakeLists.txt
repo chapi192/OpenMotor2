@@ -7,14 +7,15 @@ project("PhysSim")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_BUILD_TYPE "")
 
 add_compile_definitions(SFML_STATIC)
 
 # executable creation
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB_RECURSE HEADERS ${PROJECT_SOURCE_DIR}/src/*.h)  # to have the .h headers in the VS Header Files filter
-file(GLOB_RECURSE HEADERS ${PROJECT_SOURCE_DIR}/src/*.hpp) # to have the .hpp headers in the VS Header Files filter
+file(GLOB_RECURSE HEADERS  # to have headers in the VS Header Files filter
+	${PROJECT_SOURCE_DIR}/src/*.h
+	${PROJECT_SOURCE_DIR}/src/*.hpp
+)
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -35,4 +36,17 @@ target_link_libraries(${PROJECT_NAME}
 	opengl32
 	winmm
 	gdi32
+)
+
+# tests creation
+file(GLOB_RECURSE SOURCES_TEST ${PROJECT_SOURCE_DIR}/tests/*.cpp)
+file(GLOB_RECURSE HEADERS_TEST  # to have headers in the VS Header Files filter
+	${PROJECT_SOURCE_DIR}/tests/*.h
+	${PROJECT_SOURCE_DIR}/tests/*.hpp
+)
+add_executable(tests ${SOURCES_TEST} ${HEADERS_TEST})
+
+target_include_directories(tests PUBLIC
+	src
+	tests
 )
