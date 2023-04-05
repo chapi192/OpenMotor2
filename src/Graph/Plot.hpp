@@ -10,6 +10,7 @@ public:
 	 * @param position  top left position of plot
 	 * @param size      width and height of plot
 	 * @param margin    distance of axes from the borders of the plot
+	 * @param padding   distance of extrema to the axes of the plot
 	 * @param font      sf::Font reference
 	 * @param xLabel    label of x-axis
 	 * @param axesColor color of axes, such as the lines and indicators
@@ -18,6 +19,7 @@ public:
 		const sf::Vector2f& position,
 		const sf::Vector2f& size,
 		float margin,
+		float padding,
 		const sf::Font& font,
 		const std::string& xLabel = "",
 		const sf::Color& axesColor = sf::Color::Black
@@ -77,15 +79,23 @@ private:
 
 	/**
 	 * Converts plot coordinates to window coordinates
-	 * @param  loc The position to convert
-	 * @return     Converted Position
+	 * @param  coords The position to convert
+	 * @return        Converted Position
 	 */
-	sf::Vector2f coordToWindowPosition(const sf::Vector2f& loc);
+	sf::Vector2f coordToWindowPosition(const sf::Vector2f& coords);
+
+	/**
+	 * Converts plot coordinates to window coordinates, adjusted for padding
+	 * @param  coords The position to convert
+	 * @return        Converted Position
+	 */
+	sf::Vector2f coordToWindowPosition_padded(const sf::Vector2f& coords);
 private:
 	sf::Vector2f m_position;
 	sf::Vector2f m_size;
 
 	float m_margin;
+	float m_padding;  // scaling factor of the axes's extent
 
 	std::vector<DataSet> m_dataSets;
 

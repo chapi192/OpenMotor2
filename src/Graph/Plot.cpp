@@ -44,35 +44,11 @@ int scinotScalingDegree(float min, float max, size_t precision = 3) {
 	return degree;
 }
 
-void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	target.draw(m_axesVertexArray, states);
-	target.draw(m_axesIndicatorVertexArray, states);
-	for (size_t i = 0; i < m_dataSetsVertexArrays.size(); i++) {
-		if (m_dataSetInvisible[i])
-			continue;
-		target.draw(m_dataSetsVertexArrays[i], states);
-	}
-	for (size_t i = 0; i < m_textElementArray.size(); i++) {
-		target.draw(m_textElementArray[i], states);
-	}
-}
-
-sf::Vector2f Plot::coordToWindowPosition(const sf::Vector2f& coords) {
-	sf::Vector2f windowPosition;
-
-	float xAxisLength = m_size.x - 2 * m_margin;
-	float yAxisLength = m_size.y - 2 * m_margin;
-
-	windowPosition.x = m_position.x + (           m_margin + xAxisLength * ((coords.x - m_min.x) / (m_max.x - m_min.x) ));
-	windowPosition.y = m_position.y + (m_size.y - m_margin - yAxisLength * ((coords.y - m_min.y) / (m_max.y - m_min.y) ));
-
-	return windowPosition;
-}
-
 Plot::Plot(
 	const sf::Vector2f& position,
 	const sf::Vector2f& size,
 	float margin,
+	float padding,
 	const sf::Font& font,
 	const std::string& xLabel,
 	const sf::Color& axesColor
@@ -80,6 +56,7 @@ Plot::Plot(
 		m_position(position),
 		m_size(size),
 		m_margin(margin),
+		m_padding(padding),
 		m_font(font),
 		m_xAxisLabel(xLabel),
 		m_axesColor(axesColor) {}
@@ -184,9 +161,10 @@ void Plot::generateVertices() {
 	const int precision = 3;
 	float tickLength = m_margin / 10;
 
-	const float xLimit = m_adjMax.x + m_coordSteps.x / 2;
+	const float xLimit = m_adjMax.x + m_coordSteps.x / 2 * m_padding;
+	sf::Vector2f windowPosition = coordToWindowPosition({ 0, m_min.y });
 	for (float x = m_adjMin.x; x < xLimit; x += m_coordSteps.x) {
-		sf::Vector2f windowPosition = coordToWindowPosition({ x, m_min.y });
+		windowPosition.x = coordToWindowPosition_padded({ x, 0 }).x;
 
 		m_axesIndicatorVertexArray.append({ windowPosition, m_axesColor });
 		m_axesIndicatorVertexArray.append({ { windowPosition.x, windowPosition.y + tickLength }, m_axesColor });
@@ -203,9 +181,10 @@ void Plot::generateVertices() {
 	// get scaling for the y-axis
 	int degree = scinotScalingDegree(m_adjMin.y, m_adjMax.y, precision);
 	float scaling = std::pow(0.1, degree);
-	const float yLimit = m_adjMax.y + m_coordSteps.y / 2;
+	const float yLimit = m_adjMax.y + m_coordSteps.y / 2 * m_padding;
+	windowPosition = coordToWindowPosition({ m_min.x, 0 });
 	for (float y = m_adjMin.y; y < yLimit; y += m_coordSteps.y) {
-		sf::Vector2f windowPosition = coordToWindowPosition({ m_min.x, y });
+		windowPosition.y = coordToWindowPosition_padded({ 0, y }).y;
 
 		m_axesIndicatorVertexArray.append({ windowPosition, m_axesColor });
 		m_axesIndicatorVertexArray.append({ { windowPosition.x - tickLength, windowPosition.y }, m_axesColor });
@@ -244,7 +223,7 @@ void Plot::generateVertices() {
 			graph.setPrimitiveType(sf::PrimitiveType::Quads);
 
 			for (size_t i = 0; i < dataset.getDataLength(); i++) {
-				sf::Vector2f windowPosition = coordToWindowPosition(dataset.getDataValue(i));
+				sf::Vector2f windowPosition = coordToWindowPosition_padded(dataset.getDataValue(i));
 
 				graph.append({ { windowPosition.x - 2, windowPosition.y - 2 }, col});
 				graph.append({ { windowPosition.x + 2, windowPosition.y - 2 }, col});
@@ -255,7 +234,7 @@ void Plot::generateVertices() {
 			graph.setPrimitiveType(sf::PrimitiveType::LinesStrip);
 
 			for (size_t i = 0; i < dataset.getDataLength(); i++) {
-				sf::Vector2f windowPosition = coordToWindowPosition(dataset.getDataValue(i));
+				sf::Vector2f windowPosition = coordToWindowPosition_padded(dataset.getDataValue(i));
 
 				graph.append(sf::Vertex(windowPosition, col));
 			}
@@ -274,4 +253,54 @@ void Plot::clearVertices() {
 	m_axesIndicatorVertexArray.clear();
 	m_dataSetsVertexArrays.clear();
 	m_textElementArray.clear();
+}
+
+void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+	target.draw(m_axesVertexArray, states);
+	target.draw(m_axesIndicatorVertexArray, states);
+	for (size_t i = 0; i < m_dataSetsVertexArrays.size(); i++) {
+		if (m_dataSetInvisible[i])
+			continue;
+		target.draw(m_dataSetsVertexArrays[i], states);
+	}
+	for (size_t i = 0; i < m_textElementArray.size(); i++) {
+		target.draw(m_textElementArray[i], states);
+	}
+}
+
+sf::Vector2f Plot::coordToWindowPosition(const sf::Vector2f& coords) {
+	float axisLengthX = m_size.x - 2 * m_margin;
+	float axisLengthY = m_size.y - 2 * m_margin;
+
+	auto range = m_max - m_min;
+	auto distMin = coords - m_min;
+
+	sf::Vector2f localPosition;
+	float localPositionX = axisLengthX * distMin.x / range.x;
+	float localPositionY = axisLengthY * distMin.y / range.y;
+	localPositionY = m_size.y - localPositionY;  // adjust y to be from bottom to top
+
+	sf::Vector2f windowPosition;
+	windowPosition.x = localPositionX + m_position.x + m_margin;
+	windowPosition.y = localPositionY + m_position.y - m_margin;
+	return windowPosition;
+}
+
+sf::Vector2f Plot::coordToWindowPosition_padded(const sf::Vector2f& coords) {
+	float axisLengthX = m_size.x - 2 * m_margin;
+	float axisLengthY = m_size.y - 2 * m_margin;
+
+	auto range = m_max - m_min;
+	auto distMinX = (coords.x - m_min.x) + (range.x / 2 * (m_padding - 1));
+	auto distMinY = (coords.y - m_min.y) + (range.y / 2 * (m_padding - 1));
+
+	sf::Vector2f localPosition;
+	localPosition.x = axisLengthX * distMinX / (range.x * m_padding);
+	localPosition.y = axisLengthY * distMinY / (range.y * m_padding);
+	localPosition.y = m_size.y - localPosition.y;  // adjust y to be from bottom to top
+
+	sf::Vector2f windowPosition{ localPosition };
+	windowPosition.x += m_position.x + m_margin;
+	windowPosition.y += m_position.y - m_margin;
+	return windowPosition;
 }

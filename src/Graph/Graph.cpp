@@ -2,7 +2,7 @@
 using namespace graph;
 
 Graph::Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel) :
-		m_plot{ {}, {}, 50, font, xAxisLabel },
+		m_plot{ {}, {}, 50, 1.05, font, xAxisLabel },
 		m_canvasPlot{ tgui::CanvasSFML::create() },
 		m_legend{ tgui::ChildWindow::create("Legend", 0) },
 		m_canvasLegend{ tgui::CanvasSFML::create({ 2 * lineLength, "100%" }) }
