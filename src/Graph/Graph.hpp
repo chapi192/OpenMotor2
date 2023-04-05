@@ -65,6 +65,9 @@ private:
 		inUseColors[i] = true;
 		return colors[i];
 	}
+
+	void legendMinimize();
+	void legendMaximize();
 private:
 	Plot m_plot;
 	float m_heightOffset;

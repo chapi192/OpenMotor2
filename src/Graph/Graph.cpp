@@ -4,7 +4,7 @@ using namespace graph;
 Graph::Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel) :
 		m_plot{ {}, {}, 50, 1.05, font, xAxisLabel },
 		m_canvasPlot{ tgui::CanvasSFML::create() },
-		m_legend{ tgui::ChildWindow::create("Legend", 0) },
+		m_legend{ tgui::ChildWindow::create("Legend", tgui::ChildWindow::Minimize) },
 		m_canvasLegend{ tgui::CanvasSFML::create({ 2 * lineLength, "100%" }) }
 {
 	inUseColors.insert(inUseColors.begin(), colors.size(), false);
@@ -16,6 +16,9 @@ Graph::Graph(tgui::Container::Ptr container, const sf::Font& font, const std::st
 	m_plot.setSize(container->getSize());
 	m_legend->setPosition(0.75 * container->getSize().x, 0.02 * container->getSize().y);
 	m_legend->setClientSize({0, 0});
+
+	m_legend->onMinimize(&legendMinimize, this);
+	m_legend->onMaximize(&legendMaximize, this);
 }
 
 void Graph::addDataSet(
@@ -90,4 +93,15 @@ void Graph::updateLegend(float length) {
 	m_legend->setPosition(m_legend->getPosition() + distanceToBottomRight);
 
 	updateCanvasLegend();
+}
+
+void Graph::legendMinimize() {
+	m_legend->setHeight(m_legend->getSize().y - m_legend->getClientSize().y);
+	m_legend->setTitleButtons(tgui::ChildWindow::Maximize);
+}
+void Graph::legendMaximize() {
+	float length = m_legend->getClientSize().x;
+	length -= m_canvasLegend->getSize().x;  // adjusts for the respective `+=` in updateLegend
+	updateLegend(length + 1);  // adjusts for the respective `- 1`
+	m_legend->setTitleButtons(tgui::ChildWindow::Minimize);
 }
