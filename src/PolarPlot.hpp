@@ -53,4 +53,6 @@ private:
 	sf::Color m_vertexColor;
 
 	sf::VertexArray m_vertices;
+
+	sf::RectangleShape m_border;
 };
