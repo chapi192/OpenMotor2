@@ -18,18 +18,21 @@ PolarPlot::PolarPlot(
 		m_plotColor(plot), 
 		m_vertexColor(vertex)
 { 
-	m_center = { position.x - m_size.x / 2, position.y - m_size.y / 2 }; 
+	m_center = { m_size.x / 2, m_size.y / 2 }; 
 	m_slices = (length - 2 * margin) / ( 10.f / 9.f );
-	m_vertexColor = sf::Color{0x00FF00};
-	sf::RectangleShape shape(m_size);
-	shape.setPosition(m_position);
-	shape.setOutlineColor(sf::Color::Black);
-	shape.setOutlineThickness(2);
+	m_vertexColor = sf::Color::Black;
+	m_border.setSize({m_size.x - 2, m_size.y - 2});
+	m_border.setPosition( position.x + 1, 1 );
+	m_border.setOutlineColor(sf::Color::Black);
+	m_border.setFillColor(sf::Color::Transparent);
+	m_border.setOutlineThickness(1);
+	m_vertices.setPrimitiveType(sf::LineStrip);
 }
 
 void PolarPlot::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(m_vertices);
+	target.draw(m_border);
 }
 
 void PolarPlot::generateVertices(Grain& grain)
@@ -41,33 +44,33 @@ void PolarPlot::generateVertices(Grain& grain)
 void PolarPlot::calculatePolarCoords(Grain& grain)
 {
 	float plotSize = m_size.x - 2.f * m_margin;
-	for (int slice = 0; slice < m_slices; slice++) {
+	for (int slice = 0; slice <= m_slices; slice++) {
 		sf::Vector2f polarCoord;
-		polarCoord.x = plotSize;
+		polarCoord.x = plotSize / 2;
 		polarCoord.y = (2 * PI - (2 * PI / m_slices) ) * slice;
 		m_polarVertexPosition.emplace_back(polarCoord);
 	}
 	int slicesInner = (m_size.x - 2 * m_margin) * (grain.getGeometryRadiusInner() / grain.getGrainRadius()) * (10.f / 9.f);
 	int slicesOuter = (m_size.x - 2 * m_margin) * (grain.getGeometryRadiusOuter() / grain.getGrainRadius()) * (10.f / 9.f);
 	switch (grain.getGrainGeometry()) {
-	case (GrainGeometry::TUBE):
-		for (int slice = 0; slice < slicesOuter; slice++) {
+	case (TUBE):
+		for (int slice = 0; slice <= slicesOuter; slice++) {
 			sf::Vector2f polarCoord;
-			polarCoord.x = plotSize * (grain.getGeometryRadiusOuter() / grain.getGrainRadius());
+			polarCoord.x = (plotSize / 2) * (grain.getGeometryRadiusOuter() / grain.getGrainRadius());
 			polarCoord.y = (2 * PI - (2 * PI / slicesOuter) ) * slice;
 			m_polarVertexPosition.emplace_back(polarCoord);
 		}
 		break;
-	case (GrainGeometry::TUBE_AND_ROD):
-		for (int slice = 0; slice < slicesOuter; slice++) {
+	case (TUBE_AND_ROD):
+		for (int slice = 0; slice <= slicesOuter; slice++) {
 			sf::Vector2f polarCoord;
-			polarCoord.x = plotSize * (grain.getGeometryRadiusOuter() / grain.getGrainRadius());
+			polarCoord.x = (plotSize / 2) * (grain.getGeometryRadiusOuter() / grain.getGrainRadius());
 			polarCoord.y = (2 * PI - (2 * PI / slicesOuter)) * slice;
 			m_polarVertexPosition.emplace_back(polarCoord);
 		}
-		for (int slice = 0; slice < slicesInner; slice++) {
+		for (int slice = 0; slice <= slicesInner; slice++) {
 			sf::Vector2f polarCoord;
-			polarCoord.x = plotSize * (grain.getGeometryRadiusInner() / grain.getGrainRadius());
+			polarCoord.x = (plotSize / 2) * (grain.getGeometryRadiusInner() / grain.getGrainRadius());
 			polarCoord.y = (2 * PI - (2 * PI / slicesInner)) * slice;
 			m_polarVertexPosition.emplace_back(polarCoord);
 
