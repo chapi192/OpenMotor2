@@ -3,22 +3,22 @@ using namespace graph;
 
 Graph::Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel) :
 		m_plot{ {}, {}, 50, 1.05, font, xAxisLabel },
-		m_canvasPlot{ tgui::CanvasSFML::create() },
-		m_legend{ tgui::ChildWindow::create("Legend", tgui::ChildWindow::Minimize) },
-		m_canvasLegend{ tgui::CanvasSFML::create({ 2 * lineLength, "100%" }) }
+		m_plotCanvas{ tgui::CanvasSFML::create() },
+		m_legendWindow{ tgui::ChildWindow::create("Legend", tgui::ChildWindow::Minimize) },
+		m_legendCanvas{ tgui::CanvasSFML::create({ 2 * lineLength, "100%" }) }
 {
 	inUseColors.insert(inUseColors.begin(), colors.size(), false);
 
-	container->add(m_canvasPlot);
-	container->add(m_legend);
-	m_legend->add(m_canvasLegend);
+	container->add(m_plotCanvas);
+	container->add(m_legendWindow);
+	m_legendWindow->add(m_legendCanvas);
 
 	m_plot.setSize(container->getSize());
-	m_legend->setPosition(0.75 * container->getSize().x, 0.02 * container->getSize().y);
-	m_legend->setClientSize({0, 0});
+	m_legendWindow->setPosition(0.75 * container->getSize().x, 0.02 * container->getSize().y);
+	m_legendWindow->setClientSize({0, 0});
 
-	m_legend->onMinimize(&legendMinimize, this);
-	m_legend->onMaximize(&legendMaximize, this);
+	m_legendWindow->onMinimize(&legendMinimize, this);
+	m_legendWindow->onMaximize(&legendMaximize, this);
 }
 
 void Graph::addDataSet(
@@ -46,24 +46,24 @@ void Graph::addDataSet(
 		toggleDataset(datasetID);
 	button->onToggle(&toggleDataset, this, datasetID);
 
-	tgui::Layout y = m_buttons.empty() ? 0 : bindBottom(m_buttons.back());
-	button->setPosition(bindRight(m_canvasLegend), y - 1);
+	tgui::Layout y = m_legendButtons.empty() ? 0 : bindBottom(m_legendButtons.back());
+	button->setPosition(bindRight(m_legendCanvas), y - 1);
 	button->setSize(button->getSize().x, (int)(button->getSize().y + 1));  // (int)y: height of button is initially a floating value so it would look ugly
 
 	float length = button->getSize().x;
-	m_legend->add(button);
-	m_buttons.push_back(button);
+	m_legendWindow->add(button);
+	m_legendButtons.push_back(button);
 
-	updateLegend(length);
+	updateLegendWindow(length);
 }
 
-void Graph::updateCanvasLegend() {
-	m_canvasLegend->clear(sf::Color{0xf0f0f0ff});
+void Graph::updateLegendCanvas() {
+	m_legendCanvas->clear(sf::Color{0xf0f0f0ff});
 
 	auto& dataSets = m_plot.getDataSets();
 	auto& invisibility = m_plot.getDataSetInvisibility();
 
-	auto position = tgui::Vector2f{ 0.5f * lineLength, 0.5f * m_heightOffset - lineWidth / 2};
+	auto position = tgui::Vector2f{ lineLength / 2.0f, (m_heightOffset - lineWidth) / 2.0f - 1};
 	for (size_t i = 0; i != dataSets.size(); i++, position.y += m_heightOffset) {
 		if (invisibility[i])
 			continue;
@@ -71,37 +71,66 @@ void Graph::updateCanvasLegend() {
 		rect.setFillColor(dataSets[i].getColor());
 		rect.setSize({ lineLength, lineWidth });
 		rect.setPosition(position);
-		m_canvasLegend->draw(rect);
+		m_legendCanvas->draw(rect);
 	}
 
-	m_canvasLegend->display();
+	m_legendCanvas->display();
 }
 
-void Graph::updateLegend(float length) {
+void Graph::updateLegendWindow(float length) {
 	float buttonLength = length;
-	length += m_canvasLegend->getSize().x;
-	if (length < m_legend->getClientSize().x)
-		length = m_legend->getClientSize().x;
+	length += m_legendCanvas->getSize().x;
+	if (length < m_legendWindow->getClientSize().x)
+		length = m_legendWindow->getClientSize().x;
 
-	m_heightOffset = m_buttons[0]->getSize().y - 1;
-	float height = m_heightOffset * m_buttons.size();
-	m_legend->setClientSize({length - 1, height - 1});
+	m_heightOffset = m_legendButtons[0]->getSize().y - 1;
+	float height = m_heightOffset * m_legendButtons.size();
+	m_legendWindow->setClientSize({length - 1, height - 1});
 
-	auto distanceToBottomRight = m_canvasPlot->getSize() - (m_legend->getPosition() + m_legend->getSize());
-	distanceToBottomRight.x = distanceToBottomRight.x < 0 ? distanceToBottomRight.x : 0;
-	distanceToBottomRight.y = distanceToBottomRight.y < 0 ? distanceToBottomRight.y : 0;
-	m_legend->setPosition(m_legend->getPosition() + distanceToBottomRight);
+	auto distToBottomRight = m_plotCanvas->getSize() - (m_legendWindow->getPosition() + m_legendWindow->getSize());
+	distToBottomRight.x = distToBottomRight.x < 0 ? distToBottomRight.x : 0;
+	distToBottomRight.y = distToBottomRight.y < 0 ? distToBottomRight.y : 0;
+	auto distToTopLeft = m_legendWindow->getPosition() + distToBottomRight;
+	distToTopLeft.x = distToTopLeft.x < 0 ? distToTopLeft.x : 0;
+	distToTopLeft.y = distToTopLeft.y < 0 ? distToTopLeft.y : 0;
+	m_legendWindow->setPosition(m_legendWindow->getPosition() + distToBottomRight - distToTopLeft);
 
-	updateCanvasLegend();
+	updateLegendCanvas();
+}
+
+void Graph::toggleDataset(int index) {
+	m_plot.toggleDatasetVisibility(index);
+	auto& idx = dataSetUsingColor[index];
+	if (idx != -2) {
+		if (!m_plot.getDataSetInvisibility()[index]) {
+			m_plot.setDataSetColor(index, getNextColor(index));
+		} else if (idx != -1) {
+			if (idx < inUseColors.size())
+				inUseColors[idx] = false;
+			idx = -1;
+		}
+	}
+	update();  // TODO: make this more modular rather than needing to generate vertices every time a dataset is toggled
+}
+
+const sf::Color& Graph::getNextColor(int index) {
+	int i = 0;
+	while (i < inUseColors.size() && inUseColors[i])
+		i++;
+	if (i == inUseColors.size())
+		return colors[i - 1];
+	dataSetUsingColor[index] = i;
+	inUseColors[i] = true;
+	return colors[i];
 }
 
 void Graph::legendMinimize() {
-	m_legend->setHeight(m_legend->getSize().y - m_legend->getClientSize().y);
-	m_legend->setTitleButtons(tgui::ChildWindow::Maximize);
+	m_legendWindow->setHeight(m_legendWindow->getSize().y - m_legendWindow->getClientSize().y);
+	m_legendWindow->setTitleButtons(tgui::ChildWindow::Maximize);
 }
 void Graph::legendMaximize() {
-	float length = m_legend->getClientSize().x;
-	length -= m_canvasLegend->getSize().x;  // adjusts for the respective `+=` in updateLegend
-	updateLegend(length + 1);  // adjusts for the respective `- 1`
-	m_legend->setTitleButtons(tgui::ChildWindow::Minimize);
+	float length = m_legendWindow->getClientSize().x;
+	length -= m_legendCanvas->getSize().x;  // adjusts for the respective `+=` in updateLegend
+	updateLegendWindow(length + 1);  // adjusts for the respective `- 1`
+	m_legendWindow->setTitleButtons(tgui::ChildWindow::Minimize);
 }

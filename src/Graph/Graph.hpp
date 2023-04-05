@@ -23,59 +23,37 @@ public:
 			const sf::Color& color = sf::Color::Transparent
 	);
 
-	void updateCanvasLegend();
+	void updateLegendCanvas();
 
-	void updateLegend(float length);
+	void updateLegendWindow(float length);
 
 	inline void update() {
 		m_plot.scaleAxes();
 		m_plot.generateVertices();
-		updateCanvasLegend();
+		updateLegendCanvas();
 		draw();
 	}
 
 	inline void draw() {
-		m_canvasPlot->clear(sf::Color{0xffffffff});
-		m_canvasPlot->draw(m_plot);
-		m_canvasPlot->display();
+		m_plotCanvas->clear(sf::Color{0xffffffff});
+		m_plotCanvas->draw(m_plot);
+		m_plotCanvas->display();
 	}
 
-	inline void toggleDataset(int index) {
-		m_plot.toggleDatasetVisibility(index);
-		auto& idx = dataSetUsingColor[index];
-		if (idx != -2) {
-			if (!m_plot.getDataSetInvisibility()[index]) {
-				m_plot.setDataSetColor(index, getNextColor(index));
-			} else if (idx != -1) {
-				if (idx < inUseColors.size())
-					inUseColors[idx] = false;
-				idx = -1;
-			}
-		}
-		update();  // TODO: make this more modular rather than needing to generate vertices every time a dataset is toggled
-	}
+	void toggleDataset(int index);
 private:
-	inline const sf::Color& getNextColor(int index) {
-		int i = 0;
-		while (i < inUseColors.size() && inUseColors[i])
-			i++;
-		if (i == inUseColors.size())
-			return colors[i - 1];
-		dataSetUsingColor[index] = i;
-		inUseColors[i] = true;
-		return colors[i];
-	}
+	const sf::Color& getNextColor(int index);
 
 	void legendMinimize();
 	void legendMaximize();
 private:
 	Plot m_plot;
 	float m_heightOffset;
-	tgui::CanvasSFML::Ptr m_canvasPlot;
+	tgui::CanvasSFML::Ptr m_plotCanvas;
 
-	tgui::ChildWindow::Ptr m_legend;
-	tgui::CanvasSFML::Ptr m_canvasLegend;
-	std::vector<tgui::ToggleButton::Ptr> m_buttons;
+	tgui::ChildWindow::Ptr m_legendWindow;
+	tgui::CanvasSFML::Ptr m_legendCanvas;
+	std::vector<tgui::ToggleButton::Ptr> m_legendButtons;
 
 	std::vector<sf::Color> colors {
 		{  25, 122, 182 },
