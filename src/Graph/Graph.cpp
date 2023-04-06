@@ -1,20 +1,23 @@
 #include "Graph.hpp"
 using namespace graph;
 
-Graph::Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel) :
+Graph::Graph(const tgui::Layout2d& size, const sf::Font& font, const std::string& xAxisLabel) :
+		Container{ "Graph", true },
 		m_plot{ {}, {}, 50, 1.05, font, xAxisLabel },
 		m_plotCanvas{ tgui::CanvasSFML::create() },
 		m_legendWindow{ tgui::ChildWindow::create("Legend", tgui::ChildWindow::Minimize) },
 		m_legendCanvas{ tgui::CanvasSFML::create({ 2 * lineLength, "100%" }) }
 {
+	m_size = size;
 	inUseColors.insert(inUseColors.begin(), colors.size(), false);
 
-	container->add(m_plotCanvas);
-	container->add(m_legendWindow);
+	add(m_plotCanvas);
+	add(m_legendWindow);
 	m_legendWindow->add(m_legendCanvas);
 
-	m_plot.setSize(container->getSize());
-	m_legendWindow->setPosition(0.75 * container->getSize().x, 0.02 * container->getSize().y);
+	m_plotCanvas->setSize("parent.size");
+	m_plot.setSize(m_plotCanvas->getSize());
+	m_legendWindow->setPosition("75%", "2%");
 	m_legendWindow->setClientSize({0, 0});
 
 	m_legendWindow->onMinimize(&legendMinimize, this);

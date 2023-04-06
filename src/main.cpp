@@ -86,21 +86,22 @@ int main()
     auto container = tabContainer.getPanel(0);  // A panel is a container
 
     // TODO: use the same font as the one used for TGUI, instead of using f_ariel
-    graph::Graph graph{ container, f_ariel, "Time - s" };
+    auto graph = graph::Graph::create(container->getSize(), f_ariel, "Time - s");
+    container->add(graph);
 
     auto& grainRes = res.m_grains[0];
-    graph.addDataSet(res.m_time, res.m_kn           , "Kn"                           , false);
-    graph.addDataSet(res.m_time, res.m_pressure     , "Chamber Pressure - Pa"        , false);
-    graph.addDataSet(res.m_time, res.m_force        , "Thrust - N"                          );
-    graph.addDataSet(res.m_time, res.m_volumeLoading, "Volume Loading - %"           , false);
-    graph.addDataSet(res.m_time, res.m_exitPressure , "Nozzle Exit Pressure - Pa"    , false);
-    graph.addDataSet(res.m_time, res.m_dThroat      , "Change in Throat Diameter - m", false);
-    graph.addDataSet(res.m_time, grainRes.m_mass    , "Mass of Propellant - kg"             );
-    graph.addDataSet(res.m_time, grainRes.m_massFlow, "Mass flow - kg/s"             , false);
-    graph.addDataSet(res.m_time, grainRes.m_massFlux, "Mass flux - kg/(s*m^2)"       , false);
-    graph.addDataSet(res.m_time, grainRes.m_reg     , "Regression Depth - m"         , false);
-    graph.addDataSet(res.m_time, grainRes.m_web     , "Web - m"                      , false);
-    graph.update();
+    graph->addDataSet(res.m_time, res.m_kn           , "Kn"                           , false);
+    graph->addDataSet(res.m_time, res.m_pressure     , "Chamber Pressure - Pa"        , false);
+    graph->addDataSet(res.m_time, res.m_force        , "Thrust - N"                          );
+    graph->addDataSet(res.m_time, res.m_volumeLoading, "Volume Loading - %"           , false);
+    graph->addDataSet(res.m_time, res.m_exitPressure , "Nozzle Exit Pressure - Pa"    , false);
+    graph->addDataSet(res.m_time, res.m_dThroat      , "Change in Throat Diameter - m", false);
+    graph->addDataSet(res.m_time, grainRes.m_mass    , "Mass of Propellant - kg"             );
+    graph->addDataSet(res.m_time, grainRes.m_massFlow, "Mass flow - kg/s"             , false);
+    graph->addDataSet(res.m_time, grainRes.m_massFlux, "Mass flux - kg/(s*m^2)"       , false);
+    graph->addDataSet(res.m_time, grainRes.m_reg     , "Regression Depth - m"         , false);
+    graph->addDataSet(res.m_time, grainRes.m_web     , "Web - m"                      , false);
+    graph->update();
 
     while (window.isOpen())
     {

@@ -8,12 +8,19 @@
 #include <vector>
 
 namespace graph {
-class Graph {
+class Graph : public tgui::Container {
 private:
 	static const int lineLength = 10;
 	static const int lineWidth = 3;
 public:
-	Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel = "");
+	typedef std::shared_ptr<Graph> Ptr;
+	typedef std::shared_ptr<const Graph> ConstPtr;
+
+	Graph(const tgui::Layout2d& size, const sf::Font& font, const std::string& xAxisLabel = "");
+
+	static Ptr create(const tgui::Layout2d& size, const sf::Font& font, const std::string& xAxisLabel = "") {
+		return std::make_shared<Graph>(size, font, xAxisLabel);
+	}
 
 	void addDataSet(
 			const std::vector<float>& xAxis,
@@ -46,6 +53,18 @@ private:
 
 	void legendMinimize();
 	void legendMaximize();
+private:
+	bool isMouseOnWidget(tgui::Vector2f pos) const override {
+		return tgui::FloatRect{ getPosition().x, getPosition().y, getSize().x, getSize().y }.contains(pos);
+	}
+
+	void draw(tgui::BackendRenderTarget& target, tgui::RenderStates states) const override {
+		Container::draw(target, states);
+	}
+
+	Widget::Ptr clone() const override {
+		return std::make_shared<Graph>(*this);
+	}
 private:
 	Plot m_plot;
 	float m_heightOffset;
