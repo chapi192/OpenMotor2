@@ -31,8 +31,15 @@ public:
 	 */
 	std::array<float, 3> calcAutoscale(float min, float max);
 
-	/** Scales axes according to their min and max bounds */
-	void scaleAxes();
+	/** Set axes's bounds based on the datasets */
+	void setAxes();
+
+	/**
+	 * Scales axes's bounds through zooming on a point.
+	 * @param zoom   Amount to zoom (as an inverse multiplier)
+	 * @param origin The point to zoom on
+	 */
+	void scaleAxes(const sf::Vector2f& zoom, const sf::Vector2f& origin);
 
 	/**
 	 * Adds a dataset to the plot
@@ -73,6 +80,17 @@ public:
 	inline size_t getDataSetCount() {
 		return m_dataSets.size();
 	}
+
+	inline sf::Vector2f getAxesSize() {
+		return {m_size.x - 2 * m_margin, m_size.y - 2 * m_margin};
+	}
+
+	/**
+	 * Converts window coordinates to plot coordinates, adjusted for padding
+	 * @param  coords The position to convert
+	 * @return        Converted Position
+	 */
+	sf::Vector2f windowPositionToCoord_padded(const sf::Vector2f& pos);
 private:
 	/** SFML Function override */
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

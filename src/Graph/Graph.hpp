@@ -35,7 +35,6 @@ public:
 	void updateLegendWindow(float length);
 
 	inline void update() {
-		m_plot.scaleAxes();
 		m_plot.generateVertices();
 		updateLegendCanvas();
 		draw();
@@ -53,7 +52,11 @@ private:
 
 	void legendMinimize();
 	void legendMaximize();
+
+	void zoomPlot(sf::Vector2f zoom, sf::Vector2f origin);
 private:
+	bool mouseWheelScrolled(float delta, tgui::Vector2f pos) override;
+
 	bool isMouseOnWidget(tgui::Vector2f pos) const override {
 		return tgui::FloatRect{ getPosition().x, getPosition().y, getSize().x, getSize().y }.contains(pos);
 	}
@@ -69,6 +72,7 @@ private:
 	Plot m_plot;
 	float m_heightOffset;
 	tgui::CanvasSFML::Ptr m_plotCanvas;
+	tgui::Vector2f m_plotZoom{ 1, 1 };
 
 	tgui::ChildWindow::Ptr m_legendWindow;
 	tgui::CanvasSFML::Ptr m_legendCanvas;

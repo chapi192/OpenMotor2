@@ -82,7 +82,7 @@ std::array<float, 3> Plot::calcAutoscale(float min, float max) {
 	return { interval, minAdj, maxAdj };
 }
 
-void Plot::scaleAxes() {
+void Plot::setAxes() {
 	float xMin = INFINITY;
 	float yMin = INFINITY;
 	float xMax = -INFINITY;
@@ -115,6 +115,15 @@ void Plot::scaleAxes() {
 		m_max.y = 1;
 	}
 
+	scaleAxes({1, 1}, {(m_max.x + m_min.x) / 2, (m_max.y + m_min.y) / 2});
+}
+
+void Plot::scaleAxes(const sf::Vector2f& zoom, const sf::Vector2f& origin) {
+	m_min.x = origin.x + (m_min.x - origin.x) / zoom.x;
+	m_min.y = origin.y + (m_min.y - origin.y) / zoom.y;
+	m_max.x = origin.x + (m_max.x - origin.x) / zoom.x;
+	m_max.y = origin.y + (m_max.y - origin.y) / zoom.y;
+
 	auto resY = calcAutoscale(m_min.y, m_max.y);
 	m_coordSteps.y = resY[0];
 	m_adjMin.y = resY[1];
@@ -124,6 +133,12 @@ void Plot::scaleAxes() {
 	m_coordSteps.x = resX[0];
 	m_adjMin.x = resX[1];
 	m_adjMax.x = resX[2];
+
+	// adjust coordSteps when very small so that they can actually increment adjMin to reach adjMax
+	while (m_adjMax.x + m_coordSteps.x == m_adjMax.x || m_adjMin.x + m_coordSteps.x == m_adjMin.x)
+		m_coordSteps.x *= 1.01;
+	while (m_adjMax.y + m_coordSteps.y == m_adjMax.y || m_adjMin.y + m_coordSteps.y == m_adjMin.y)
+		m_coordSteps.y *= 1.01;
 }
 
 void Plot::addDataSet(const DataSet& data_set) {
@@ -206,7 +221,7 @@ void Plot::generateVertices() {
 
 		sf::Text scinotLabel{ initText };
 		scinotLabel.setString(scinotStr);
-		scinotLabel.setPosition(coordToWindowPosition({ 0, m_max.y }) + sf::Vector2f{0, -0.4f * m_margin});
+		scinotLabel.setPosition(coordToWindowPosition({ m_min.x, m_max.y }) + sf::Vector2f{0, -0.4f * m_margin});
 		sf::FloatRect yaxisSize = scinotLabel.getLocalBounds();
 		scinotLabel.setOrigin(yaxisSize.left + yaxisSize.width, yaxisSize.top + yaxisSize.height);
 		m_textElementArray.push_back(scinotLabel);
@@ -268,35 +283,51 @@ void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	}
 }
 
+sf::Vector2f Plot::windowPositionToCoord_padded(const sf::Vector2f& pos) {
+	auto axisLength = getAxesSize();
+
+	auto range = m_max - m_min;
+
+	float localPosX = pos.x - (m_position.x + m_margin);
+	float localPosY = pos.y - (m_position.y - m_margin);
+
+	localPosY = m_size.y - localPosY;
+	localPosX *= m_padding / axisLength.x;
+	localPosY *= m_padding / axisLength.y;
+	localPosX -= (m_padding - 1) / 2;
+	localPosY -= (m_padding - 1) / 2;
+	localPosX = (localPosX * range.x) + m_min.x;
+	localPosY = (localPosY * range.y) + m_min.y;
+
+	return { localPosX, localPosY };
+}
+
 sf::Vector2f Plot::coordToWindowPosition(const sf::Vector2f& coords) {
-	float axisLengthX = m_size.x - 2 * m_margin;
-	float axisLengthY = m_size.y - 2 * m_margin;
+	auto axisLength = getAxesSize();
 
 	auto range = m_max - m_min;
 	auto distMin = coords - m_min;
 
 	sf::Vector2f localPosition;
-	float localPositionX = axisLengthX * distMin.x / range.x;
-	float localPositionY = axisLengthY * distMin.y / range.y;
-	localPositionY = m_size.y - localPositionY;  // adjust y to be from bottom to top
+	localPosition.x = axisLength.x * distMin.x / range.x;
+	localPosition.y = axisLength.y * distMin.y / range.y;
+	localPosition.y = m_size.y - localPosition.y;  // adjust y to be from bottom to top
 
-	sf::Vector2f windowPosition;
-	windowPosition.x = localPositionX + m_position.x + m_margin;
-	windowPosition.y = localPositionY + m_position.y - m_margin;
+	sf::Vector2f windowPosition{ localPosition };
+	windowPosition.x += m_position.x + m_margin;
+	windowPosition.y += m_position.y - m_margin;
 	return windowPosition;
 }
 
 sf::Vector2f Plot::coordToWindowPosition_padded(const sf::Vector2f& coords) {
-	float axisLengthX = m_size.x - 2 * m_margin;
-	float axisLengthY = m_size.y - 2 * m_margin;
+	auto axisLength = getAxesSize();
 
 	auto range = m_max - m_min;
-	auto distMinX = (coords.x - m_min.x) + (range.x / 2 * (m_padding - 1));
-	auto distMinY = (coords.y - m_min.y) + (range.y / 2 * (m_padding - 1));
+	auto distMin = coords - m_min;
 
 	sf::Vector2f localPosition;
-	localPosition.x = axisLengthX * distMinX / (range.x * m_padding);
-	localPosition.y = axisLengthY * distMinY / (range.y * m_padding);
+	localPosition.x = axisLength.x / m_padding * (distMin.x / range.x + (m_padding - 1) / 2);
+	localPosition.y = axisLength.y / m_padding * (distMin.y / range.y + (m_padding - 1) / 2);
 	localPosition.y = m_size.y - localPosition.y;  // adjust y to be from bottom to top
 
 	sf::Vector2f windowPosition{ localPosition };

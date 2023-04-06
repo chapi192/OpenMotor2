@@ -1,5 +1,6 @@
 #include "Graph.hpp"
 using namespace graph;
+#include <cmath>
 
 Graph::Graph(const tgui::Layout2d& size, const sf::Font& font, const std::string& xAxisLabel) :
 		Container{ "Graph", true },
@@ -113,6 +114,7 @@ void Graph::toggleDataset(int index) {
 			idx = -1;
 		}
 	}
+	m_plot.setAxes();
 	update();  // TODO: make this more modular rather than needing to generate vertices every time a dataset is toggled
 }
 
@@ -136,4 +138,23 @@ void Graph::legendMaximize() {
 	length -= m_legendCanvas->getSize().x;  // adjusts for the respective `+=` in updateLegend
 	updateLegendWindow(length + 1);  // adjusts for the respective `- 1`
 	m_legendWindow->setTitleButtons(tgui::ChildWindow::Minimize);
+}
+
+bool Graph::mouseWheelScrolled(float delta, tgui::Vector2f pos) {
+	float zoomAmount = std::pow(1.05, delta);
+	auto origin = m_plot.windowPositionToCoord_padded(pos - m_plotCanvas->getPosition());
+
+	zoomPlot(sf::Vector2f{1,1} * zoomAmount, origin);
+	update();
+	return Widget::mouseWheelScrolled(delta, pos);
+}
+
+void Graph::zoomPlot(sf::Vector2f zoom, sf::Vector2f origin) {
+	if (m_plotZoom.x * zoom.x < 1)
+		zoom.x = 1 / m_plotZoom.x;
+	if (m_plotZoom.y * zoom.y < 1)
+		zoom.y = 1 / m_plotZoom.y;
+	m_plotZoom.x *= zoom.x;
+	m_plotZoom.y *= zoom.y;
+	m_plot.scaleAxes(zoom, origin);
 }
