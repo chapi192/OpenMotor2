@@ -86,11 +86,11 @@ public:
 	}
 
 	/**
-	 * Converts window coordinates to plot coordinates, adjusted for padding
+	 * Converts window coordinates to plot coordinates
 	 * @param  coords The position to convert
 	 * @return        Converted Position
 	 */
-	sf::Vector2f windowPositionToCoord_padded(const sf::Vector2f& pos);
+	sf::Vector2f windowPositionToCoord(const sf::Vector2f& pos);
 private:
 	/** SFML Function override */
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -101,13 +101,6 @@ private:
 	 * @return        Converted Position
 	 */
 	sf::Vector2f coordToWindowPosition(const sf::Vector2f& coords);
-
-	/**
-	 * Converts plot coordinates to window coordinates, adjusted for padding
-	 * @param  coords The position to convert
-	 * @return        Converted Position
-	 */
-	sf::Vector2f coordToWindowPosition_padded(const sf::Vector2f& coords);
 private:
 	sf::Vector2f m_position;
 	sf::Vector2f m_size;
@@ -122,6 +115,8 @@ private:
 	std::string m_xAxisLabel;
 
 	sf::Color m_axesColor;
+	sf::Vector2f m_absMin;
+	sf::Vector2f m_absMax;
 	sf::Vector2f m_adjMin;
 	sf::Vector2f m_adjMax;
 	sf::Vector2f m_min;

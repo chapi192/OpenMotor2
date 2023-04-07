@@ -72,7 +72,6 @@ private:
 	Plot m_plot;
 	float m_heightOffset;
 	tgui::CanvasSFML::Ptr m_plotCanvas;
-	tgui::Vector2f m_plotZoom{ 1, 1 };
 
 	tgui::ChildWindow::Ptr m_legendWindow;
 	tgui::CanvasSFML::Ptr m_legendCanvas;

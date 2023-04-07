@@ -142,7 +142,7 @@ void Graph::legendMaximize() {
 
 bool Graph::mouseWheelScrolled(float delta, tgui::Vector2f pos) {
 	float zoomAmount = std::pow(1.05, delta);
-	auto origin = m_plot.windowPositionToCoord_padded(pos - m_plotCanvas->getPosition());
+	auto origin = m_plot.windowPositionToCoord(pos - m_plotCanvas->getPosition());
 
 	zoomPlot(sf::Vector2f{1,1} * zoomAmount, origin);
 	update();
@@ -150,11 +150,5 @@ bool Graph::mouseWheelScrolled(float delta, tgui::Vector2f pos) {
 }
 
 void Graph::zoomPlot(sf::Vector2f zoom, sf::Vector2f origin) {
-	if (m_plotZoom.x * zoom.x < 1)
-		zoom.x = 1 / m_plotZoom.x;
-	if (m_plotZoom.y * zoom.y < 1)
-		zoom.y = 1 / m_plotZoom.y;
-	m_plotZoom.x *= zoom.x;
-	m_plotZoom.y *= zoom.y;
 	m_plot.scaleAxes(zoom, origin);
 }
