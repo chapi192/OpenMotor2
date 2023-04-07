@@ -83,13 +83,13 @@ void Graph::updateLegendCanvas() {
 
 void Graph::updateLegendWindow(float length) {
 	float buttonLength = length;
-	length += m_legendCanvas->getSize().x;
+	length += m_legendCanvas->getSize().x - 1;
 	if (length < m_legendWindow->getClientSize().x)
 		length = m_legendWindow->getClientSize().x;
 
 	m_heightOffset = m_legendButtons[0]->getSize().y - 1;
 	float height = m_heightOffset * m_legendButtons.size();
-	m_legendWindow->setClientSize({length - 1, height - 1});
+	m_legendWindow->setClientSize({length, height - 1});
 
 	auto distToBottomRight = m_plotCanvas->getSize() - (m_legendWindow->getPosition() + m_legendWindow->getSize());
 	distToBottomRight.x = distToBottomRight.x < 0 ? distToBottomRight.x : 0;
@@ -135,8 +135,8 @@ void Graph::legendMinimize() {
 }
 void Graph::legendMaximize() {
 	float length = m_legendWindow->getClientSize().x;
-	length -= m_legendCanvas->getSize().x;  // adjusts for the respective `+=` in updateLegend
-	updateLegendWindow(length + 1);  // adjusts for the respective `- 1`
+	length -= m_legendCanvas->getSize().x - 1;  // adjusts for the respective `+=` in updateLegend
+	updateLegendWindow(length);
 	m_legendWindow->setTitleButtons(tgui::ChildWindow::Minimize);
 }
 

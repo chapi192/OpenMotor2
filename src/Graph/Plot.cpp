@@ -170,6 +170,7 @@ void Plot::scaleAxes(const sf::Vector2f& zoom, const sf::Vector2f& origin) {
 void Plot::addDataSet(const DataSet& data_set) {
 	m_dataSets.push_back(data_set);
 	m_dataSetInvisible.push_back(false);
+	setAxes();
 }
 
 void Plot::generateVertices() {
