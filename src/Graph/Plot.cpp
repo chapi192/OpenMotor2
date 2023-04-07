@@ -271,13 +271,29 @@ void Plot::clearVertices() {
 }
 
 void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	target.draw(m_axesVertexArray, states);
-	target.draw(m_axesIndicatorVertexArray, states);
 	for (size_t i = 0; i < m_dataSetsVertexArrays.size(); i++) {
 		if (m_dataSetInvisible[i])
 			continue;
 		target.draw(m_dataSetsVertexArrays[i], states);
 	}
+
+	sf::RectangleShape rect;  // draws over the dataset lines in the margins
+	rect.setFillColor(sf::Color{0xffffffff});
+	rect.setPosition(0, 0);
+	rect.setSize({ m_margin, m_size.y - m_margin });
+	target.draw(rect);
+	rect.setPosition(0, m_size.y);
+	rect.setSize({ m_size.x - m_margin, -m_margin });
+	target.draw(rect);
+	rect.setPosition(m_size.x, m_size.y);
+	rect.setSize({ -m_margin, -m_size.y + m_margin });
+	target.draw(rect);
+	rect.setPosition(m_size.x, 0);
+	rect.setSize({ -m_size.x + m_margin, m_margin });
+	target.draw(rect);
+
+	target.draw(m_axesVertexArray, states);
+	target.draw(m_axesIndicatorVertexArray, states);
 	for (size_t i = 0; i < m_textElementArray.size(); i++) {
 		target.draw(m_textElementArray[i], states);
 	}
