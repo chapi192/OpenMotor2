@@ -89,18 +89,33 @@ int main()
     auto graph = graph::Graph::create(container->getSize(), f_ariel, "Time - s");
     container->add(graph);
 
-    auto& grainRes = res.m_grains[0];
-    graph->addDataSet(res.m_time, res.m_kn           , "Kn"                           , false);
+    graph->addDataSet(res.m_time, res.m_kn           , "Kn"                                  );
     graph->addDataSet(res.m_time, res.m_pressure     , "Chamber Pressure - Pa"        , false);
     graph->addDataSet(res.m_time, res.m_force        , "Thrust - N"                          );
     graph->addDataSet(res.m_time, res.m_volumeLoading, "Volume Loading - %"           , false);
     graph->addDataSet(res.m_time, res.m_exitPressure , "Nozzle Exit Pressure - Pa"    , false);
     graph->addDataSet(res.m_time, res.m_dThroat      , "Change in Throat Diameter - m", false);
-    graph->addDataSet(res.m_time, grainRes.m_mass    , "Mass of Propellant - kg"             );
-    graph->addDataSet(res.m_time, grainRes.m_massFlow, "Mass flow - kg/s"             , false);
-    graph->addDataSet(res.m_time, grainRes.m_massFlux, "Mass flux - kg/(s*m^2)"       , false);
-    graph->addDataSet(res.m_time, grainRes.m_reg     , "Regression Depth - m"         , false);
-    graph->addDataSet(res.m_time, grainRes.m_web     , "Web - m"                      , false);
+
+    size_t massGroupID = graph->createDataSetGroup(res.m_time, "Mass of Propellant - kg", false);
+    graph->addDataSetToGroup(res.m_grains[0].m_mass, massGroupID, " - G1");
+    graph->addDataSetToGroup(res.m_grains[1].m_mass, massGroupID, " - G2");
+    graph->addDataSetToGroup(res.m_grains[2].m_mass, massGroupID, " - G3");
+    size_t flowGroupID = graph->createDataSetGroup(res.m_time, "Mass flow - kg/s"       , false);
+    graph->addDataSetToGroup(res.m_grains[0].m_massFlow, flowGroupID, " - G1");
+    graph->addDataSetToGroup(res.m_grains[1].m_massFlow, flowGroupID, " - G2");
+    graph->addDataSetToGroup(res.m_grains[2].m_massFlow, flowGroupID, " - G3");
+    size_t fluxGroupID = graph->createDataSetGroup(res.m_time, "Mass flux - kg/(s*m^2)");
+    graph->addDataSetToGroup(res.m_grains[0].m_massFlux, fluxGroupID, " - G1");
+    graph->addDataSetToGroup(res.m_grains[1].m_massFlux, fluxGroupID, " - G2");
+    graph->addDataSetToGroup(res.m_grains[2].m_massFlux, fluxGroupID, " - G3");
+    size_t regGroupID = graph->createDataSetGroup(res.m_time, "Regression Depth - m"    , false);
+    graph->addDataSetToGroup(res.m_grains[0].m_reg, regGroupID, " - G1");
+    graph->addDataSetToGroup(res.m_grains[1].m_reg, regGroupID, " - G2");
+    graph->addDataSetToGroup(res.m_grains[2].m_reg, regGroupID, " - G3");
+    size_t webGroupID = graph->createDataSetGroup(res.m_time, "Web - m"                 , false);
+    graph->addDataSetToGroup(res.m_grains[0].m_web, webGroupID, " - G1");
+    graph->addDataSetToGroup(res.m_grains[1].m_web, webGroupID, " - G2");
+    graph->addDataSetToGroup(res.m_grains[2].m_web, webGroupID, " - G3");
     graph->update();
 
     while (window.isOpen())

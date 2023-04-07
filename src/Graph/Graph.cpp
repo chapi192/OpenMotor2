@@ -61,6 +61,27 @@ void Graph::addDataSet(
 	updateLegendWindow(length);
 }
 
+size_t Graph::createDataSetGroup(const std::vector<float>& xAxis, const std::string& label, bool on) {
+	const auto ID = dataSetGroups.size();
+	DataSetGroup group;
+	group.xAxis = xAxis;
+	group.label = label;
+	group.on = on;
+	dataSetGroups.push_back(group);
+	return ID;
+}
+
+void Graph::addDataSetToGroup(
+		const std::vector<float>& yAxis,
+		size_t groupID,
+		const std::string& label,
+		const sf::Color& color
+) {
+	auto& group = dataSetGroups[groupID];
+	group.datasets.push_back(m_plot.getDataSetCount());
+	addDataSet(group.xAxis, yAxis, group.label + label, group.on, color);
+}
+
 void Graph::updateLegendCanvas() {
 	m_legendCanvas->clear(sf::Color{0xf0f0f0ff});
 

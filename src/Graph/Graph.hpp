@@ -30,6 +30,15 @@ public:
 			const sf::Color& color = sf::Color::Transparent
 	);
 
+	size_t createDataSetGroup(const std::vector<float>& xAxis, const std::string& label, bool on = true);
+
+	void addDataSetToGroup(
+		const std::vector<float>& yAxis,
+		size_t groupID,
+		const std::string& label,
+		const sf::Color& color = sf::Color::Transparent
+	);
+
 	void updateLegendCanvas();
 
 	void updateLegendWindow(float length);
@@ -69,7 +78,15 @@ private:
 		return std::make_shared<Graph>(*this);
 	}
 private:
+	struct DataSetGroup {
+		std::vector<float> xAxis;
+		std::string label;
+		std::vector<size_t> datasets;
+		bool on;
+	};
+private:
 	Plot m_plot;
+	std::vector<DataSetGroup> dataSetGroups;
 	float m_heightOffset;
 	tgui::CanvasSFML::Ptr m_plotCanvas;
 
