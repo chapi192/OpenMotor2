@@ -12,11 +12,16 @@ Graph::Graph(const tgui::Layout2d& size, const sf::Font& font, const std::string
 	m_size = size;
 	inUseColors.insert(inUseColors.begin(), colors.size(), false);
 
+	auto hideButton = tgui::ToggleButton::create("Legend - Hide Off", false);
+	hideButton->onToggle(legendHideInvisible, this);
+	add(hideButton);
+
 	add(m_plotCanvas);
 	add(m_legendWindow);
 	m_legendWindow->add(m_legendCanvas);
 
-	m_plotCanvas->setSize("parent.size");
+	m_plotCanvas->setPosition(0, hideButton->getSize().y);
+	m_plotCanvas->setSize("parent.size - pos");
 	m_plot.setSize(m_plotCanvas->getSize());
 	m_legendWindow->setPosition("75%", "2%");
 	m_legendWindow->setClientSize({0, 0});
@@ -89,14 +94,18 @@ void Graph::updateLegendCanvas() {
 	auto& invisibility = m_plot.getDataSetInvisibility();
 
 	auto position = tgui::Vector2f{ lineLength / 2.0f, (m_heightOffset - lineWidth) / 2.0f - 1};
-	for (size_t i = 0; i != dataSets.size(); i++, position.y += m_heightOffset) {
-		if (invisibility[i])
+	for (size_t i = 0; i != dataSets.size(); i++) {
+		if (invisibility[i]) {
+			if (!m_hidden)
+				position.y += m_heightOffset;
 			continue;
+		}
 		sf::RectangleShape rect;
 		rect.setFillColor(dataSets[i].getColor());
 		rect.setSize({ lineLength, lineWidth });
 		rect.setPosition(position);
 		m_legendCanvas->draw(rect);
+		position.y += m_heightOffset;
 	}
 
 	m_legendCanvas->display();
@@ -109,7 +118,14 @@ void Graph::updateLegendWindow(float length) {
 		length = m_legendWindow->getClientSize().x;
 
 	m_heightOffset = m_legendButtons[0]->getSize().y - 1;
-	float height = m_heightOffset * m_legendButtons.size();
+	float height = 0;
+	if (m_hidden) {
+		auto& invisibility = m_plot.getDataSetInvisibility();
+		for (const auto& invisible : invisibility)
+			height += m_heightOffset * !invisible;
+	} else {
+		height = m_heightOffset * m_legendButtons.size();
+	}
 	m_legendWindow->setClientSize({length, height - 1});
 
 	auto distToBottomRight = m_plotCanvas->getSize() - (m_legendWindow->getPosition() + m_legendWindow->getSize());
@@ -136,6 +152,8 @@ void Graph::toggleDataset(int index) {
 		}
 	}
 	m_plot.setAxes();
+	if (m_hidden)
+		legendHideInvisible(m_hidden);
 	update();  // TODO: make this more modular rather than needing to generate vertices every time a dataset is toggled
 }
 
@@ -159,6 +177,28 @@ void Graph::legendMaximize() {
 	length -= m_legendCanvas->getSize().x - 1;  // adjusts for the respective `+=` in updateLegend
 	updateLegendWindow(length);
 	m_legendWindow->setTitleButtons(tgui::ChildWindow::Minimize);
+}
+
+void Graph::legendHideInvisible(bool toggled) {
+	m_hidden = toggled;
+	float maxLength = 0;
+	size_t prevOn = -1;
+	auto& isInvisible = m_plot.getDataSetInvisibility();
+	for (size_t i = 0; i < m_legendButtons.size(); i++) {
+		auto& button = m_legendButtons[i];
+		if (isInvisible[i]) {
+			button->setVisible(!m_hidden);
+			if (m_hidden)
+				continue;
+		}
+		tgui::Layout y = i == 0 ? 0 : bindBottom(m_legendButtons[prevOn]);
+		prevOn = i;
+		button->setPosition(bindRight(m_legendCanvas), y - 1);
+
+		if (button->getSize().x > maxLength)
+			maxLength = button->getSize().x;
+	}
+	updateLegendWindow(maxLength);
 }
 
 bool Graph::mouseWheelScrolled(float delta, tgui::Vector2f pos) {

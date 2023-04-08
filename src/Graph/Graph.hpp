@@ -62,6 +62,8 @@ private:
 	void legendMinimize();
 	void legendMaximize();
 
+	void legendHideInvisible(bool toggled);
+
 	void zoomPlot(sf::Vector2f zoom, sf::Vector2f origin);
 private:
 	bool mouseWheelScrolled(float delta, tgui::Vector2f pos) override;
@@ -93,6 +95,7 @@ private:
 	tgui::ChildWindow::Ptr m_legendWindow;
 	tgui::CanvasSFML::Ptr m_legendCanvas;
 	std::vector<tgui::ToggleButton::Ptr> m_legendButtons;
+	bool m_hidden = false;
 
 	std::vector<sf::Color> colors {
 		{  25, 122, 182 },
