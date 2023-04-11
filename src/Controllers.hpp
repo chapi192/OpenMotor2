@@ -3,4 +3,5 @@
 #include "CheckBoxController.hpp"
 #include "SeparatorLineController.hpp"
 #include "TabContainerController.hpp"
+#include "TextController.hpp"
 #include "TextInputController.hpp"

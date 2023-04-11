@@ -2,7 +2,7 @@
 
 #include <TGUI/Core.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
-#include <TGUI/Widgets/TextArea.hpp>
+#include <TGUI/Widgets/EditBox.hpp>
 
 #include <vector>
 
@@ -15,8 +15,28 @@ public:
 			const tgui::String& text = ""
 	);
 
-	std::vector<tgui::TextArea::Ptr> getTextInputs();
+	void addTextInput(
+		const tgui::Layout2d& positionInContainer, 
+		const tgui::Layout2d& size, 
+		const tgui::String name, 
+		tgui::Container::Ptr& container, 
+		int maxChars = 15,
+		bool readOnly = false, 
+		std::string txt = ""
+	);
+	
+	void addTextInput(
+		const tgui::Layout2d& positionInGUI, 
+		const tgui::Layout2d& size, 
+		const tgui::String name,
+		tgui::BackendGui& gui, 
+		int maxChars = 15,
+		bool readOnly = false, 
+		std::string txt = ""
+	);
+
+	std::vector<tgui::EditBox::Ptr> getTextInputs();
 
 private:
-	std::vector<tgui::TextArea::Ptr> textInputs;
+	std::vector<tgui::EditBox::Ptr> textInputs;
 };
