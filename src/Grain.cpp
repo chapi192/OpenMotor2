@@ -8,6 +8,10 @@ void Grain::setGeometryRadiusInner(float newInnerRadius) { m_geometryInnerRadius
 
 void Grain::setGeometryRadiusOuter(float newOuterRadius) { m_geometryOuterRadius = newOuterRadius; }
 
+void Grain::setGrainDensity(float newGrainDensity) { m_grainDensity = newGrainDensity; }
+
+void Grain::setGrainMass(float newGrainMass) { m_grainMass = newGrainMass; }
+
 void Grain::setNumberOfSpecializations(int newNumSpecializations) { m_numberOfSpecializations = newNumSpecializations; }
 
 void Grain::setGeometry(GrainGeometry geometry) { m_geometry = geometry; }
@@ -19,6 +23,10 @@ float Grain::getGrainDepth() { return m_grainDepth; }
 float Grain::getGeometryRadiusInner() { return m_geometryInnerRadius; }
 
 float Grain::getGeometryRadiusOuter() { return m_geometryOuterRadius; }
+
+float Grain::getGrainDensity() { return m_grainDensity; }
+
+float Grain::getGrainMass() { return m_grainMass; }
 
 int Grain::getNumberOfSpecializations() { return m_numberOfSpecializations; }
 
