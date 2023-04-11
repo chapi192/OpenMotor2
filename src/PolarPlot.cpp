@@ -13,7 +13,7 @@ PolarPlot::PolarPlot(
 	const sf::Color& vertex
 ) :
 		m_position(position),
-		m_size({length, length}), 
+		m_size({(float)(int)length, (float)(int)length}), 
 		m_margin(margin), 
 		m_plotColor(plot), 
 		m_vertexColor(vertex)
@@ -21,8 +21,10 @@ PolarPlot::PolarPlot(
 	m_center = { m_size.x / 2, m_size.y / 2 }; 
 	m_slices = (length - 2 * margin) / ( 10.f / 9.f );
 	m_vertexColor = sf::Color::Black;
+
 	m_border.setSize({m_size.x - 2, m_size.y - 2});
 	m_border.setPosition( position.x + 1, 1 );
+	m_border.setPosition( 1, 1 );
 	m_border.setOutlineColor(sf::Color::Black);
 	m_border.setFillColor(sf::Color::Transparent);
 	m_border.setOutlineThickness(1);
