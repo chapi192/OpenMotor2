@@ -8,12 +8,19 @@
 #include <vector>
 
 namespace graph {
-class Graph {
+class Graph : public tgui::Container {
 private:
 	static const int lineLength = 10;
 	static const int lineWidth = 3;
 public:
-	Graph(tgui::Container::Ptr container, const sf::Font& font, const std::string& xAxisLabel = "");
+	typedef std::shared_ptr<Graph> Ptr;
+	typedef std::shared_ptr<const Graph> ConstPtr;
+
+	Graph(const tgui::Layout2d& size, const sf::Font& font, const std::string& xAxisLabel = "");
+
+	static Ptr create(const tgui::Layout2d& size, const sf::Font& font, const std::string& xAxisLabel = "") {
+		return std::make_shared<Graph>(size, font, xAxisLabel);
+	}
 
 	void addDataSet(
 			const std::vector<float>& xAxis,
@@ -23,56 +30,72 @@ public:
 			const sf::Color& color = sf::Color::Transparent
 	);
 
-	void updateCanvasLegend();
+	size_t createDataSetGroup(const std::vector<float>& xAxis, const std::string& label, bool on = true);
 
-	void updateLegend(float length);
+	void addDataSetToGroup(
+		const std::vector<float>& yAxis,
+		size_t groupID,
+		const std::string& label,
+		const sf::Color& color = sf::Color::Transparent
+	);
+
+	void updateLegendCanvas();
+
+	void updateLegendWindow(float length);
 
 	inline void update() {
-		m_plot.scaleAxes();
 		m_plot.generateVertices();
-		updateCanvasLegend();
+		updateLegendCanvas();
 		draw();
 	}
 
 	inline void draw() {
-		m_canvasPlot->clear(sf::Color{0xffffffff});
-		m_canvasPlot->draw(m_plot);
-		m_canvasPlot->display();
+		m_plotCanvas->clear(sf::Color{0xffffffff});
+		m_plotCanvas->draw(m_plot);
+		m_plotCanvas->display();
 	}
 
-	inline void toggleDataset(int index) {
-		m_plot.toggleDatasetVisibility(index);
-		auto& idx = dataSetUsingColor[index];
-		if (idx != -2) {
-			if (!m_plot.getDataSetInvisibility()[index]) {
-				m_plot.setDataSetColor(index, getNextColor(index));
-			} else if (idx != -1) {
-				if (idx < inUseColors.size())
-					inUseColors[idx] = false;
-				idx = -1;
-			}
-		}
-		update();  // TODO: make this more modular rather than needing to generate vertices every time a dataset is toggled
+	void toggleDataset(int index);
+private:
+	const sf::Color& getNextColor(int index);
+
+	void legendMinimize();
+	void legendMaximize();
+
+	void legendHideInvisible(bool toggled);
+
+	void zoomPlot(sf::Vector2f zoom, sf::Vector2f origin);
+private:
+	bool mouseWheelScrolled(float delta, tgui::Vector2f pos) override;
+
+	bool isMouseOnWidget(tgui::Vector2f pos) const override {
+		return tgui::FloatRect{ getPosition().x, getPosition().y, getSize().x, getSize().y }.contains(pos);
+	}
+
+	void draw(tgui::BackendRenderTarget& target, tgui::RenderStates states) const override {
+		Container::draw(target, states);
+	}
+
+	Widget::Ptr clone() const override {
+		return std::make_shared<Graph>(*this);
 	}
 private:
-	inline const sf::Color& getNextColor(int index) {
-		int i = 0;
-		while (i < inUseColors.size() && inUseColors[i])
-			i++;
-		if (i == inUseColors.size())
-			return colors[i - 1];
-		dataSetUsingColor[index] = i;
-		inUseColors[i] = true;
-		return colors[i];
-	}
+	struct DataSetGroup {
+		std::vector<float> xAxis;
+		std::string label;
+		std::vector<size_t> datasets;
+		bool on;
+	};
 private:
 	Plot m_plot;
+	std::vector<DataSetGroup> dataSetGroups;
 	float m_heightOffset;
-	tgui::CanvasSFML::Ptr m_canvasPlot;
+	tgui::CanvasSFML::Ptr m_plotCanvas;
 
-	tgui::ChildWindow::Ptr m_legend;
-	tgui::CanvasSFML::Ptr m_canvasLegend;
-	std::vector<tgui::ToggleButton::Ptr> m_buttons;
+	tgui::ChildWindow::Ptr m_legendWindow;
+	tgui::CanvasSFML::Ptr m_legendCanvas;
+	std::vector<tgui::ToggleButton::Ptr> m_legendButtons;
+	bool m_hidden = false;
 
 	std::vector<sf::Color> colors {
 		{  25, 122, 182 },

@@ -44,35 +44,11 @@ int scinotScalingDegree(float min, float max, size_t precision = 3) {
 	return degree;
 }
 
-void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	target.draw(m_axesVertexArray, states);
-	target.draw(m_axesIndicatorVertexArray, states);
-	for (size_t i = 0; i < m_dataSetsVertexArrays.size(); i++) {
-		if (m_dataSetInvisible[i])
-			continue;
-		target.draw(m_dataSetsVertexArrays[i], states);
-	}
-	for (size_t i = 0; i < m_textElementArray.size(); i++) {
-		target.draw(m_textElementArray[i], states);
-	}
-}
-
-sf::Vector2f Plot::coordToWindowPosition(const sf::Vector2f& coords) {
-	sf::Vector2f windowPosition;
-
-	float xAxisLength = m_size.x - 2 * m_margin;
-	float yAxisLength = m_size.y - 2 * m_margin;
-
-	windowPosition.x = m_position.x + (           m_margin + xAxisLength * ((coords.x - m_min.x) / (m_max.x - m_min.x) ));
-	windowPosition.y = m_position.y + (m_size.y - m_margin - yAxisLength * ((coords.y - m_min.y) / (m_max.y - m_min.y) ));
-
-	return windowPosition;
-}
-
 Plot::Plot(
 	const sf::Vector2f& position,
 	const sf::Vector2f& size,
 	float margin,
+	float padding,
 	const sf::Font& font,
 	const std::string& xLabel,
 	const sf::Color& axesColor
@@ -80,6 +56,7 @@ Plot::Plot(
 		m_position(position),
 		m_size(size),
 		m_margin(margin),
+		m_padding(padding),
 		m_font(font),
 		m_xAxisLabel(xLabel),
 		m_axesColor(axesColor) {}
@@ -105,7 +82,7 @@ std::array<float, 3> Plot::calcAutoscale(float min, float max) {
 	return { interval, minAdj, maxAdj };
 }
 
-void Plot::scaleAxes() {
+void Plot::setAxes() {
 	float xMin = INFINITY;
 	float yMin = INFINITY;
 	float xMax = -INFINITY;
@@ -138,6 +115,41 @@ void Plot::scaleAxes() {
 		m_max.y = 1;
 	}
 
+	m_absMin.x = ((m_max.x + m_min.x) - (m_max.x - m_min.x) * m_padding) / 2;
+	m_absMin.y = ((m_max.y + m_min.y) - (m_max.y - m_min.y) * m_padding) / 2;
+	m_absMax.x = ((m_max.x + m_min.x) + (m_max.x - m_min.x) * m_padding) / 2;
+	m_absMax.y = ((m_max.y + m_min.y) + (m_max.y - m_min.y) * m_padding) / 2;
+
+	scaleAxes({1 / m_padding, 1 / m_padding}, {(m_max.x + m_min.x) / 2, (m_max.y + m_min.y) / 2});
+}
+
+void Plot::scaleAxes(const sf::Vector2f& zoom, const sf::Vector2f& origin) {
+	auto ori = origin;
+	if (ori.x < m_min.x)  ori.x = m_min.x;
+	if (ori.y < m_min.y)  ori.y = m_min.y;
+	if (ori.x > m_max.x)  ori.x = m_max.x;
+	if (ori.y > m_max.y)  ori.y = m_max.y;
+
+	m_min.x = ori.x + (m_min.x - ori.x) / zoom.x;
+	m_min.y = ori.y + (m_min.y - ori.y) / zoom.y;
+	m_max.x = ori.x + (m_max.x - ori.x) / zoom.x;
+	m_max.y = ori.y + (m_max.y - ori.y) / zoom.y;
+
+	float distMinX = m_min.x - m_absMin.x;
+	float distMinY = m_min.y - m_absMin.y;
+	float distMaxX = m_max.x - m_absMax.x;
+	float distMaxY = m_max.y - m_absMax.y;
+
+	if (distMinX <= 0)  m_max.x -= distMinX;
+	if (distMaxX >= 0)  m_min.x -= distMaxX;
+	if (distMaxX >= 0)  m_max.x = m_absMax.x;
+	if (distMinX <= 0)  m_min.x = m_absMin.x;
+
+	if (distMinY <= 0)  m_max.y -= distMinY;
+	if (distMaxY >= 0)  m_min.y -= distMaxY;
+	if (distMaxY >= 0)  m_max.y = m_absMax.y;
+	if (distMinY <= 0)  m_min.y = m_absMin.y;
+
 	auto resY = calcAutoscale(m_min.y, m_max.y);
 	m_coordSteps.y = resY[0];
 	m_adjMin.y = resY[1];
@@ -147,11 +159,18 @@ void Plot::scaleAxes() {
 	m_coordSteps.x = resX[0];
 	m_adjMin.x = resX[1];
 	m_adjMax.x = resX[2];
+
+	// adjust coordSteps when very small so that they can actually increment adjMin to reach adjMax
+	while (m_adjMax.x + m_coordSteps.x == m_adjMax.x || m_adjMin.x + m_coordSteps.x == m_adjMin.x)
+		m_coordSteps.x *= 1.01;
+	while (m_adjMax.y + m_coordSteps.y == m_adjMax.y || m_adjMin.y + m_coordSteps.y == m_adjMin.y)
+		m_coordSteps.y *= 1.01;
 }
 
 void Plot::addDataSet(const DataSet& data_set) {
 	m_dataSets.push_back(data_set);
 	m_dataSetInvisible.push_back(false);
+	setAxes();
 }
 
 void Plot::generateVertices() {
@@ -185,8 +204,9 @@ void Plot::generateVertices() {
 	float tickLength = m_margin / 10;
 
 	const float xLimit = m_adjMax.x + m_coordSteps.x / 2;
+	sf::Vector2f windowPosition = coordToWindowPosition({ 0, m_min.y });
 	for (float x = m_adjMin.x; x < xLimit; x += m_coordSteps.x) {
-		sf::Vector2f windowPosition = coordToWindowPosition({ x, m_min.y });
+		windowPosition.x = coordToWindowPosition({ x, 0 }).x;
 
 		m_axesIndicatorVertexArray.append({ windowPosition, m_axesColor });
 		m_axesIndicatorVertexArray.append({ { windowPosition.x, windowPosition.y + tickLength }, m_axesColor });
@@ -204,8 +224,9 @@ void Plot::generateVertices() {
 	int degree = scinotScalingDegree(m_adjMin.y, m_adjMax.y, precision);
 	float scaling = std::pow(0.1, degree);
 	const float yLimit = m_adjMax.y + m_coordSteps.y / 2;
+	windowPosition = coordToWindowPosition({ m_min.x, 0 });
 	for (float y = m_adjMin.y; y < yLimit; y += m_coordSteps.y) {
-		sf::Vector2f windowPosition = coordToWindowPosition({ m_min.x, y });
+		windowPosition.y = coordToWindowPosition({ 0, y }).y;
 
 		m_axesIndicatorVertexArray.append({ windowPosition, m_axesColor });
 		m_axesIndicatorVertexArray.append({ { windowPosition.x - tickLength, windowPosition.y }, m_axesColor });
@@ -227,7 +248,7 @@ void Plot::generateVertices() {
 
 		sf::Text scinotLabel{ initText };
 		scinotLabel.setString(scinotStr);
-		scinotLabel.setPosition(coordToWindowPosition({ 0, m_max.y }) + sf::Vector2f{0, -0.4f * m_margin});
+		scinotLabel.setPosition(coordToWindowPosition({ m_min.x, m_max.y }) + sf::Vector2f{0, -0.4f * m_margin});
 		sf::FloatRect yaxisSize = scinotLabel.getLocalBounds();
 		scinotLabel.setOrigin(yaxisSize.left + yaxisSize.width, yaxisSize.top + yaxisSize.height);
 		m_textElementArray.push_back(scinotLabel);
@@ -274,4 +295,67 @@ void Plot::clearVertices() {
 	m_axesIndicatorVertexArray.clear();
 	m_dataSetsVertexArrays.clear();
 	m_textElementArray.clear();
+}
+
+void Plot::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+	for (size_t i = 0; i < m_dataSetsVertexArrays.size(); i++) {
+		if (m_dataSetInvisible[i])
+			continue;
+		target.draw(m_dataSetsVertexArrays[i], states);
+	}
+
+	sf::RectangleShape rect;  // draws over the dataset lines in the margins
+	rect.setFillColor(sf::Color{0xffffffff});
+	rect.setPosition(0, 0);
+	rect.setSize({ m_margin, m_size.y - m_margin });
+	target.draw(rect);
+	rect.setPosition(0, m_size.y);
+	rect.setSize({ m_size.x - m_margin, -m_margin });
+	target.draw(rect);
+	rect.setPosition(m_size.x, m_size.y);
+	rect.setSize({ -m_margin, -m_size.y + m_margin });
+	target.draw(rect);
+	rect.setPosition(m_size.x, 0);
+	rect.setSize({ -m_size.x + m_margin, m_margin });
+	target.draw(rect);
+
+	target.draw(m_axesVertexArray, states);
+	target.draw(m_axesIndicatorVertexArray, states);
+	for (size_t i = 0; i < m_textElementArray.size(); i++) {
+		target.draw(m_textElementArray[i], states);
+	}
+}
+
+sf::Vector2f Plot::windowPositionToCoord(const sf::Vector2f& pos) {
+	auto axisLength = getAxesSize();
+
+	auto range = m_max - m_min;
+
+	float localPosX = pos.x - (m_position.x + m_margin);
+	float localPosY = pos.y - (m_position.y - m_margin);
+
+	localPosY = m_size.y - localPosY;
+	localPosX /= axisLength.x;
+	localPosY /= axisLength.y;
+	localPosX = (localPosX * range.x) + m_min.x;
+	localPosY = (localPosY * range.y) + m_min.y;
+
+	return { localPosX, localPosY };
+}
+
+sf::Vector2f Plot::coordToWindowPosition(const sf::Vector2f& coords) {
+	auto axisLength = getAxesSize();
+
+	auto range = m_max - m_min;
+	auto distMin = coords - m_min;
+
+	sf::Vector2f localPosition;
+	localPosition.x = axisLength.x * distMin.x / range.x;
+	localPosition.y = axisLength.y * distMin.y / range.y;
+	localPosition.y = m_size.y - localPosition.y;  // adjust y to be from bottom to top
+
+	sf::Vector2f windowPosition{ localPosition };
+	windowPosition.x += m_position.x + m_margin;
+	windowPosition.y += m_position.y - m_margin;
+	return windowPosition;
 }

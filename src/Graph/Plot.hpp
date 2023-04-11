@@ -10,6 +10,7 @@ public:
 	 * @param position  top left position of plot
 	 * @param size      width and height of plot
 	 * @param margin    distance of axes from the borders of the plot
+	 * @param padding   distance of extrema to the axes of the plot
 	 * @param font      sf::Font reference
 	 * @param xLabel    label of x-axis
 	 * @param axesColor color of axes, such as the lines and indicators
@@ -18,6 +19,7 @@ public:
 		const sf::Vector2f& position,
 		const sf::Vector2f& size,
 		float margin,
+		float padding,
 		const sf::Font& font,
 		const std::string& xLabel = "",
 		const sf::Color& axesColor = sf::Color::Black
@@ -29,8 +31,15 @@ public:
 	 */
 	std::array<float, 3> calcAutoscale(float min, float max);
 
-	/** Scales axes according to their min and max bounds */
-	void scaleAxes();
+	/** Set axes's bounds based on the datasets */
+	void setAxes();
+
+	/**
+	 * Scales axes's bounds through zooming on a point.
+	 * @param zoom   Amount to zoom (as an inverse multiplier)
+	 * @param origin The point to zoom on
+	 */
+	void scaleAxes(const sf::Vector2f& zoom, const sf::Vector2f& origin);
 
 	/**
 	 * Adds a dataset to the plot
@@ -71,21 +80,33 @@ public:
 	inline size_t getDataSetCount() {
 		return m_dataSets.size();
 	}
+
+	inline sf::Vector2f getAxesSize() {
+		return {m_size.x - 2 * m_margin, m_size.y - 2 * m_margin};
+	}
+
+	/**
+	 * Converts window coordinates to plot coordinates
+	 * @param  coords The position to convert
+	 * @return        Converted Position
+	 */
+	sf::Vector2f windowPositionToCoord(const sf::Vector2f& pos);
 private:
 	/** SFML Function override */
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	/**
 	 * Converts plot coordinates to window coordinates
-	 * @param  loc The position to convert
-	 * @return     Converted Position
+	 * @param  coords The position to convert
+	 * @return        Converted Position
 	 */
-	sf::Vector2f coordToWindowPosition(const sf::Vector2f& loc);
+	sf::Vector2f coordToWindowPosition(const sf::Vector2f& coords);
 private:
 	sf::Vector2f m_position;
 	sf::Vector2f m_size;
 
 	float m_margin;
+	float m_padding;  // scaling factor of the axes's extent
 
 	std::vector<DataSet> m_dataSets;
 
@@ -94,6 +115,8 @@ private:
 	std::string m_xAxisLabel;
 
 	sf::Color m_axesColor;
+	sf::Vector2f m_absMin;
+	sf::Vector2f m_absMax;
 	sf::Vector2f m_adjMin;
 	sf::Vector2f m_adjMax;
 	sf::Vector2f m_min;
