@@ -16,7 +16,7 @@ void SeparatorLineController::addSeparatorLine(sf::Vector2f positionInContainer,
 	newSeparatorLine->setPosition(positionInContainer.x, positionInContainer.y);
 	newSeparatorLine->setSize(dimensions.x, dimensions.y);
 	newSeparatorLine->getRenderer()->setColor(color);
-	container->add(newSeparatorLine);
+	container->add(newSeparatorLine, name);
 
 	m_separatorLines.emplace_back(newSeparatorLine);
 }
@@ -27,7 +27,7 @@ void SeparatorLineController::addSeparatorLine(sf::Vector2f positionInGUI, sf::V
 	newSeparatorLine->setPosition(positionInGUI.x, positionInGUI.y);
 	newSeparatorLine->setSize(dimensions.x, dimensions.y);
 	newSeparatorLine->getRenderer()->setColor(color);
-	gui.add(newSeparatorLine);
+	gui.add(newSeparatorLine, name);
 
 	m_separatorLines.emplace_back(newSeparatorLine);
 }
