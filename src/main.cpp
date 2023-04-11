@@ -49,7 +49,7 @@ int main()
     slController.addSeparatorLine({ WIDTH / 2 - 1, 2 * HEIGHT / 3 }, { 2, 37 * HEIGHT / 120 }, "sl_gui_divider_InputOuput", gui); // input and output
     slController.addSeparatorLine({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 20, 2 }, "sl_gui_divider_InputGraph", gui); // input/output and grain/graph/file
     tgui::Container::Ptr tempContainer = tcController.getTabContainers()[0]->getPanel(1);
-    slController.addSeparatorLine({ tempContainer->getSize().x - tempContainer->getSize().y, 0}, 
+    slController.addSeparatorLine({ tempContainer->getSize().x - tempContainer->getSize().y, 0},
                                   {1, tempContainer->getSize().y}, "sl_grain_divider_InputGraph", tempContainer); // grain input and grain graph
 
     TextInputController textInputController;
@@ -72,42 +72,42 @@ int main()
     textInputController.addTextInput({ linePosX / 2 + 10, 340 }, { linePosX / 2 - 20, 20 }, "ti_grain_GraphScale", tempContainer);
 
     TextController tController;
-    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainRadius")->getPosition().y }, 
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainRadius")->getPosition().y },
         "Radius:", "t_grain_GrainRadius", tempContainer, 11
     );
-    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainDepth")->getPosition().y }, 
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainDepth")->getPosition().y },
         "Depth:", "t_grain_GrainDepth", tempContainer, 11
     );
-    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometry")->getPosition().y }, 
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometry")->getPosition().y },
         "Geometry:", "t_grain_GrainGeometry", tempContainer, 11
     );
-    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometryInnerRadius")->getPosition().y }, 
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometryInnerRadius")->getPosition().y },
         "Geom Inner Radius:", "t_grain_GrainGeometryInnerRadius", tempContainer, 11
     );
-    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometryOuterRadius")->getPosition().y }, 
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometryOuterRadius")->getPosition().y },
         "Geom Outer Radius:", "t_grain_GrainGeometryInnerRadius", tempContainer, 11
     );
-    tController.addText( { 10.f, tempContainer->get("ti_grain_GeometryNumberOfSpecializations")->getPosition().y }, 
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GeometryNumberOfSpecializations")->getPosition().y },
         "Num Specializations:", "t_grain_GeometryNumberOfSpecializations", tempContainer, 11
     );
-    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainDensity")->getPosition().y }, 
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainDensity")->getPosition().y },
         "Grain Density:", "t_grain_GrainDensity", tempContainer, 11
     );
     tController.addText( { 10.f, tempContainer->get("ti_grain_GrainMass")->getPosition().y },
         "Grain Mass:", "t_grain_GrainMass", tempContainer, 11
     );
-    tController.addText( { 10.f, tempContainer->get("ti_grain_GraphScale")->getPosition().y }, 
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GraphScale")->getPosition().y },
         "Graph Scale:", "t_grain_GraphScale", tempContainer, 11
     );
 
     /*auto edit = tgui::EditBox::create();
-    edit->setReadOnly(true); 
+    edit->setReadOnly(true);
     edit->setPosition({ 15, tempContainer->get("ti_grain_GrainRadius")->getPosition().y });
     edit->setSize({ 100, 20 });
     edit->setText("Grain Radius:");
     edit->getRenderer()->setBackgroundColor("White");
     edit->getRenderer()->setBorderColor("White");
-    
+
     tempContainer->add(edit, "t_grain_GrainRadius");*/
 
     CheckboxController cbController;
@@ -129,10 +129,10 @@ int main()
         gui.add(button);
     }
 
-    auto tabContainer = tcController.getTabContainers()[0];
-    tabContainer->select(1);
-    auto container = tabContainer->getPanel(1);
-    GrainGraph testGrainGraph(container, { container->getSize().x - 0.95f * container->getSize().y, container->getSize().y * 0.05f}, container->getSize().y * 0.9f);
+    // tab container that has the panels for visualizing data
+    auto& tabContainerVisual = *tcController.getTabContainers()[0];
+    auto panelGrain = tabContainerVisual.getPanel(1);
+    GrainGraph testGrainGraph(panelGrain, { panelGrain->getSize().x - 0.95f * panelGrain->getSize().y, panelGrain->getSize().y * 0.05f }, panelGrain->getSize().y * 0.9f);
     testGrainGraph.updateGrainDepth(1);
     testGrainGraph.updateGrainRadius(0.5);
     testGrainGraph.updateGrainGeometry(TUBE);
@@ -159,18 +159,16 @@ int main()
         textBoxes[10]->setText(std::to_string(testGrainGraph.retrieveGrainDensity()));
         textBoxes[11]->setText(std::to_string(testGrainGraph.retrieveGrainMass()));
         textBoxes[12]->setText(std::to_string(testGrainGraph.retrieveGraphScale()));
-    } );        
+    } );
 
     motor::Motor motor;
     auto res = motor.burn();
 
-    auto& tabContainer = *tcController.getTabContainers()[0];
-    tabContainer.select(0);  // Focuses on the "Graph" panel
-    auto container = tabContainer.getPanel(0);  // A panel is a container
+    auto panelGraph = tabContainerVisual.getPanel(0);
 
     // TODO: use the same font as the one used for TGUI, instead of using f_ariel
-    auto graph = graph::Graph::create(container->getSize(), f_ariel, "Time - s");
-    container->add(graph);
+    auto graph = graph::Graph::create(panelGraph->getSize(), f_ariel, "Time - s");
+    panelGraph->add(graph);
 
     graph->addDataSet(res.m_time, res.m_kn           , "Kn"                                  );
     graph->addDataSet(res.m_time, res.m_pressure     , "Chamber Pressure - Pa"        , false);
@@ -251,7 +249,7 @@ GrainGeometry toGrainGeometry(std::string geom)
 {
     GrainGeometry grainGeom = TUBE;
     geom = toLower(geom);
-    
+
     if (geom == "tube")
         grainGeom = TUBE;
     else if (geom == "tube and rod")
