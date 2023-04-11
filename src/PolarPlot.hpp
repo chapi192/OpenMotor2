@@ -18,6 +18,8 @@ public:
 								  m_vertices.clear(); }
 
 	void setSize(float length) { m_size = { length, length }; }
+
+	void setScale(float scale) { m_scale = scale; }
 	
 	void setPosition(sf::Vector2f position) { m_position = {position.x, position.y}; }
 
@@ -31,6 +33,8 @@ public:
 
 	sf::Color getVertexColor() const { return m_vertexColor; }
 
+	float getScale() { return m_scale; }
+
 private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -40,6 +44,7 @@ private:
 
 private:
 	float m_margin;
+	float m_scale;
 
 	int m_slices;
 
