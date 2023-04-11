@@ -33,27 +33,42 @@ public:
 
 	float retrieveGrainDepth() { return m_grain.getGrainDepth(); }
 
+	float retrieveGrainDensity() { return m_grain.getGrainDensity(); }
+
+	float retrieveGrainMass() { return m_grain.getGrainMass(); }
+
 	int retrieveNumSpecializations() { return m_grain.getNumberOfSpecializations(); }
 
 	std::string retrieveGrainGeometry();
 
+	float retrieveGraphScale() { return m_plot.getScale(); }
+
 	inline void updateGrainRadius(float grainRadius) { m_grain.setGrainRadius(grainRadius); 
-													  update(); }
+													   update(); }
 
 	inline void updateGrainDepth(float grainDepth) { m_grain.setGrainDepth(grainDepth); 
-												    update(); }
+												     update(); }
 	
 	inline void updateInnerGrainRadius(float innerRadius) { m_grain.setGeometryRadiusInner(innerRadius);
-														   update(); }
+														    update(); }
 	
 	inline void updateOuterGrainRadius(float outerRadius) { m_grain.setGeometryRadiusOuter(outerRadius);
-														   update(); }
+														    update(); }
 	
 	inline void updateNumSpecializations(int numSpecializations) { m_grain.setNumberOfSpecializations(numSpecializations);
-																  update(); }
+																   update(); }
 	
 	inline void updateGrainGeometry(GrainGeometry geometry) { m_grain.setGeometry(geometry);
-															 update(); }
+															  update(); }
+
+	inline void updateGrainDensity(float density) { m_grain.setGrainDensity(density);
+													update(); };
+
+	inline void updateGrainMass(float mass) { m_grain.setGrainMass(mass);
+											  update(); }
+
+	inline void updateGraphScale(float scale) { m_plot.setScale(scale); 
+												update(); }
 
 	tgui::CanvasSFML::Ptr getCanvas() const { return m_grainCanvas; }
 
