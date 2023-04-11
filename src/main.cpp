@@ -6,6 +6,7 @@
 #include "Controllers.hpp"
 #include <TGUI/Widgets/ChildWindow.hpp>
 #include "GrainGraph.hpp"
+#include <cmath>
 
 float tofloat(std::string);
 GrainGeometry toGrainGeometry(std::string);
@@ -30,7 +31,7 @@ int main()
     txt_temp.setPosition((WIDTH / 2) - (txt_temp.getGlobalBounds().width / 2), HEIGHT / 2);
 
     TabContainerController tcController;
-    tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 2 * HEIGHT / 3}, { "Graph", "Grain" });
+    tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 77 * HEIGHT / 120}, { "Graph", "Grain" });
     tcController.addTabContainer({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Input" });
     tcController.addTabContainer({ WIDTH / 2, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Output" });
     tcController.addTabContainer({ 2 * WIDTH / 3, HEIGHT / 40 }, { 37 * WIDTH / 120, 77 * HEIGHT / 120 }, { "File" });
@@ -41,42 +42,74 @@ int main()
     }
 
     SeparatorLineController slController;
-    slController.addSeparatorLine({ WIDTH / 40, HEIGHT / 40 }, { 19 * WIDTH / 20, 2 }); // top outline
-    slController.addSeparatorLine({ WIDTH / 40, 39 * HEIGHT / 40 - 1 }, { 19 * WIDTH / 20 + 1, 2 }); // bottom outline
-    slController.addSeparatorLine({ WIDTH / 40, HEIGHT / 40 }, { 2, 19 * HEIGHT / 20 }); // left outline
-    slController.addSeparatorLine({ 39 * WIDTH / 40 - 1, HEIGHT / 40 }, { 2, 19 * HEIGHT / 20 + 1 }); // right outline
-    slController.addSeparatorLine({ 2 * WIDTH / 3 - 1, HEIGHT / 40 }, { 2, 77 * HEIGHT / 120 }); // graph/grain and file
-    slController.addSeparatorLine({ WIDTH / 2 - 1, 2 * HEIGHT / 3 }, { 2, 37 * HEIGHT / 120 }); // input and output
-    slController.addSeparatorLine({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 20, 2 }); // input/output and grain/graph/file
-    auto tempContainer = tcController.getTabContainers()[0];
-    slController.addSeparatorLine({0.25f * tempContainer->getSize().x + tempContainer->getPosition().x, tempContainer->getPosition().y + tempContainer->getTabs()->getSize().y},
-                                  {1, tempContainer->getSize().y - tempContainer->getTabs()->getSize().y});
-    
-    tempContainer->select(1);
-    tempContainer->getPanel(1)->add(slController.getSeparatorLines()[7]);
-
-
-    for (tgui::SeparatorLine::Ptr separatorLine : slController.getSeparatorLines())
-    {
-        gui.add(separatorLine);
-    }
+    slController.addSeparatorLine({ WIDTH / 40, HEIGHT / 40 }, { 19 * WIDTH / 20, 2 }, "sl_gui_border_Top", gui); // top outline
+    slController.addSeparatorLine({ WIDTH / 40, 39 * HEIGHT / 40 - 1 }, { 19 * WIDTH / 20 + 1, 2 }, "sl_gui_border_Bottom", gui); // bottom outline
+    slController.addSeparatorLine({ WIDTH / 40, HEIGHT / 40 }, { 2, 19 * HEIGHT / 20 }, "sl_gui_border_Left", gui); // left outline
+    slController.addSeparatorLine({ 39 * WIDTH / 40 - 1, HEIGHT / 40 }, { 2, 19 * HEIGHT / 20 + 1 }, "sl_gui_border_Right", gui); // right outline
+    slController.addSeparatorLine({ 2 * WIDTH / 3 - 1, HEIGHT / 40 }, { 2, 77 * HEIGHT / 120 }, "sl_gui_divider_GraphFile", gui); // graph/grain and file
+    slController.addSeparatorLine({ WIDTH / 2 - 1, 2 * HEIGHT / 3 }, { 2, 37 * HEIGHT / 120 }, "sl_gui_divider_InputOuput", gui); // input and output
+    slController.addSeparatorLine({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 20, 2 }, "sl_gui_divider_InputGraph", gui); // input/output and grain/graph/file
+    tgui::Container::Ptr tempContainer = tcController.getTabContainers()[0]->getPanel(1);
+    slController.addSeparatorLine({ tempContainer->getSize().x - tempContainer->getSize().y, 0}, 
+                                  {1, tempContainer->getSize().y}, "sl_grain_divider_InputGraph", tempContainer); // grain input and grain graph
 
     TextInputController textInputController;
-    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 30 }, { 50, 25 });
-    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 60 }, { 50, 25 }, "testing");
-    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 90 }, { 50, 25 });
-    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 120 }, { 50, 25 });
-    tempContainer = tcController.getTabContainers()[0];
-    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 30 }, { 75, 20 });
-    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 60 }, { 75, 20 });
-    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 90 }, { 75, 20 });
-    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 120 }, { 75, 20 });
-    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 150 }, { 75, 20 });
-    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 180 }, { 75, 20 });
-    textInputController.addTextInput({ tempContainer->getPosition().x + 15, tempContainer->getPosition().y + 210 }, { 75, 20 });
-    for (auto& textInput : textInputController.getTextInputs()) {
-        gui.add(textInput);
-    }
+
+    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 30 }, { 50, 25 }, "ti_input_i1", gui);
+    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 60 }, { 50, 25 }, "ti_input_i2", gui, false, "testing");
+    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 90 }, { 50, 25 }, "ti_input_i2", gui);
+    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 120 }, { 50, 25 }, "ti_input_i2", gui);
+    //auto tabContainer = tcController.getTabContainers()[0];
+    tempContainer = tcController.getTabContainers()[0]->getPanel(1);
+    float linePosX = tempContainer->get("sl_grain_divider_InputGraph")->getPosition().x;
+    textInputController.addTextInput({ linePosX / 2 + 10, 20 }, { linePosX / 2 - 20, 20 }, "ti_grain_GrainRadius", tempContainer);
+    textInputController.addTextInput({ linePosX / 2 + 10, 60 }, { linePosX / 2 - 20, 20 }, "ti_grain_GrainDepth", tempContainer);
+    textInputController.addTextInput({ linePosX / 2 + 10, 100 }, { linePosX / 2 - 20, 20 }, "ti_grain_GrainGeometry", tempContainer);
+    textInputController.addTextInput({ linePosX / 2 + 10, 140 }, { linePosX / 2 - 20, 20 }, "ti_grain_GrainGeometryInnerRadius", tempContainer);
+    textInputController.addTextInput({ linePosX / 2 + 10, 180 }, { linePosX / 2 - 20, 20 }, "ti_grain_GrainGeometryOuterRadius", tempContainer);
+    textInputController.addTextInput({ linePosX / 2 + 10, 220 }, { linePosX / 2 - 20, 20 }, "ti_grain_GeometryNumberOfSpecializations", tempContainer);
+    textInputController.addTextInput({ linePosX / 2 + 10, 260 }, { linePosX / 2 - 20, 20 }, "ti_grain_GrainDensity", tempContainer);
+    textInputController.addTextInput({ linePosX / 2 + 10, 300 }, { linePosX / 2 - 20, 20 }, "ti_grain_GrainMass", tempContainer);
+    textInputController.addTextInput({ linePosX / 2 + 10, 340 }, { linePosX / 2 - 20, 20 }, "ti_grain_GraphScale", tempContainer);
+
+    TextController tController;
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainRadius")->getPosition().y }, 
+        "Radius:", "t_grain_GrainRadius", tempContainer, 11
+    );
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainDepth")->getPosition().y }, 
+        "Depth:", "t_grain_GrainDepth", tempContainer, 11
+    );
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometry")->getPosition().y }, 
+        "Geometry:", "t_grain_GrainGeometry", tempContainer, 11
+    );
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometryInnerRadius")->getPosition().y }, 
+        "Geom Inner Radius:", "t_grain_GrainGeometryInnerRadius", tempContainer, 11
+    );
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainGeometryOuterRadius")->getPosition().y }, 
+        "Geom Outer Radius:", "t_grain_GrainGeometryInnerRadius", tempContainer, 11
+    );
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GeometryNumberOfSpecializations")->getPosition().y }, 
+        "Num Specializations:", "t_grain_GeometryNumberOfSpecializations", tempContainer, 11
+    );
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainDensity")->getPosition().y }, 
+        "Grain Density:", "t_grain_GrainDensity", tempContainer, 11
+    );
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GrainMass")->getPosition().y },
+        "Grain Mass:", "t_grain_GrainMass", tempContainer, 11
+    );
+    tController.addText( { 10.f, tempContainer->get("ti_grain_GraphScale")->getPosition().y }, 
+        "Graph Scale:", "t_grain_GraphScale", tempContainer, 11
+    );
+
+    /*auto edit = tgui::EditBox::create();
+    edit->setReadOnly(true); 
+    edit->setPosition({ 15, tempContainer->get("ti_grain_GrainRadius")->getPosition().y });
+    edit->setSize({ 100, 20 });
+    edit->setText("Grain Radius:");
+    edit->getRenderer()->setBackgroundColor("White");
+    edit->getRenderer()->setBorderColor("White");
+    
+    tempContainer->add(edit, "t_grain_GrainRadius");*/
 
     CheckboxController cbController;
     cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 38 }, { 9, 9 }, textInputController.getTextInputs()[0], "Force");
@@ -100,18 +133,21 @@ int main()
     auto tabContainer = tcController.getTabContainers()[0];
     tabContainer->select(1);
     auto container = tabContainer->getPanel(1);
-    GrainGraph testGrainGraph(container, { 0.25f * container->getSize().x + 20, 20}, 100);
+    GrainGraph testGrainGraph(container, { container->getSize().x - 0.95f * container->getSize().y, container->getSize().y * 0.05f}, container->getSize().y * 0.9f);
     testGrainGraph.updateGrainDepth(1);
     testGrainGraph.updateGrainRadius(0.5);
     testGrainGraph.updateGrainGeometry(TUBE);
 
     auto textBoxes = textInputController.getTextInputs();
-    textBoxes[4]->onTextChange([&]{ testGrainGraph.updateGrainRadius(tofloat((std::string)textBoxes[4]->getText())); }); // update grain radius
-    textBoxes[5]->onTextChange([&]{ testGrainGraph.updateGrainDepth(tofloat((std::string)textBoxes[5]->getText())); }); // update grain depth
-    textBoxes[6]->onTextChange([&]{ testGrainGraph.updateGrainGeometry(toGrainGeometry((std::string)textBoxes[6]->getText())); }); // update grain geometry
-    textBoxes[7]->onTextChange([&]{ testGrainGraph.updateInnerGrainRadius(tofloat((std::string)textBoxes[7]->getText())); }); // update inner inner grain radius
-    textBoxes[8]->onTextChange([&]{ testGrainGraph.updateOuterGrainRadius(tofloat((std::string)textBoxes[8]->getText())); }); // update outer inner grain radius
-    textBoxes[9]->onTextChange([&]{ testGrainGraph.updateNumSpecializations(tofloat((std::string)textBoxes[9]->getText())); }); // update specialization amount
+    textBoxes[4]->onReturnKeyPress([&] { testGrainGraph.updateGrainRadius(tofloat((std::string)textBoxes[4]->getText())); }); // update grain radius
+    textBoxes[5]->onReturnKeyPress([&]{ testGrainGraph.updateGrainDepth(tofloat((std::string)textBoxes[5]->getText())); }); // update grain depth
+    textBoxes[6]->onReturnKeyPress([&]{ testGrainGraph.updateGrainGeometry(toGrainGeometry((std::string)textBoxes[6]->getText())); }); // update grain geometry
+    textBoxes[7]->onReturnKeyPress([&]{ testGrainGraph.updateInnerGrainRadius(tofloat((std::string)textBoxes[7]->getText())); }); // update inner inner grain radius
+    textBoxes[8]->onReturnKeyPress([&]{ testGrainGraph.updateOuterGrainRadius(tofloat((std::string)textBoxes[8]->getText())); }); // update outer inner grain radius
+    textBoxes[9]->onReturnKeyPress([&]{ testGrainGraph.updateNumSpecializations(tofloat((std::string)textBoxes[9]->getText())); }); // update specialization amount
+    textBoxes[10]->onReturnKeyPress([&]{ testGrainGraph.updateGrainDensity(tofloat((std::string)textBoxes[10]->getText())); }); // update grain density
+    textBoxes[11]->onReturnKeyPress([&]{ testGrainGraph.updateGrainMass(tofloat((std::string)textBoxes[11]->getText())); }); // update grain mass
+    textBoxes[12]->onReturnKeyPress([&]{ testGrainGraph.updateGraphScale(tofloat((std::string)textBoxes[12]->getText())); }); // update scale of the graph
 
     testGrainGraph.getCanvas()->onClick([&textBoxes, &testGrainGraph]
     {
@@ -121,6 +157,9 @@ int main()
         textBoxes[7]->setText(std::to_string(testGrainGraph.retrieveInnerGeometryRadius()));
         textBoxes[8]->setText(std::to_string(testGrainGraph.retrieveOuterGeometryRadius()));
         textBoxes[9]->setText(std::to_string(testGrainGraph.retrieveNumSpecializations()));
+        textBoxes[10]->setText(std::to_string(testGrainGraph.retrieveGrainDensity()));
+        textBoxes[11]->setText(std::to_string(testGrainGraph.retrieveGrainMass()));
+        textBoxes[12]->setText(std::to_string(testGrainGraph.retrieveGraphScale()));
     } );        
 
     //sf::CircleShape shape(100.f);
