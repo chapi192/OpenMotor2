@@ -13,7 +13,7 @@ Graph::Graph(const tgui::Layout2d& size, const sf::Font& font, const std::string
 	inUseColors.insert(inUseColors.begin(), colors.size(), false);
 
 	auto hideButton = tgui::ToggleButton::create("Legend - Hide Off", false);
-	hideButton->onToggle(legendHideInvisible, this);
+	hideButton->onToggle(&Graph::legendHideInvisible, this);
 	add(hideButton);
 
 	add(m_plotCanvas);
@@ -26,8 +26,8 @@ Graph::Graph(const tgui::Layout2d& size, const sf::Font& font, const std::string
 	m_legendWindow->setPosition("75%", "2%");
 	m_legendWindow->setClientSize({0, 0});
 
-	m_legendWindow->onMinimize(&legendMinimize, this);
-	m_legendWindow->onMaximize(&legendMaximize, this);
+	m_legendWindow->onMinimize(&Graph::legendMinimize, this);
+	m_legendWindow->onMaximize(&Graph::legendMaximize, this);
 }
 
 void Graph::addDataSet(
@@ -53,7 +53,7 @@ void Graph::addDataSet(
 	auto button = tgui::ToggleButton::create(str, on);
 	if (!on)
 		toggleDataset(datasetID);
-	button->onToggle(&toggleDataset, this, datasetID);
+	button->onToggle(&Graph::toggleDataset, this, datasetID);
 
 	tgui::Layout y = m_legendButtons.empty() ? 0 : bindBottom(m_legendButtons.back());
 	button->setPosition(bindRight(m_legendCanvas), y - 1);
