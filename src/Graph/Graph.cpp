@@ -191,7 +191,7 @@ void Graph::legendHideInvisible(bool toggled) {
 			if (m_hidden)
 				continue;
 		}
-		tgui::Layout y = i == 0 ? 0 : bindBottom(m_legendButtons[prevOn]);
+		tgui::Layout y = prevOn == -1 ? 0 : bindBottom(m_legendButtons[prevOn]);
 		prevOn = i;
 		button->setPosition(bindRight(m_legendCanvas), y - 1);
 
