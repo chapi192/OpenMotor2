@@ -37,9 +37,9 @@ int main()
 
     TabContainerController tcController;
     tcController.addTabContainer({ w / 40, h / 40 }, { 77 * w / 120, 77 * h / 120}, { "Graph", "Grain" });
-    tcController.addTabContainer({ w / 40, 2 * h / 3 }, { 19 * w / 40, 39 * h / 120 }, { "Input" });
-    tcController.addTabContainer({ w / 2, 2 * h / 3 }, { 19 * w / 40, 39 * h / 120 }, { "Output" });
     tcController.addTabContainer({ 2 * w / 3, h / 40 }, { 37 * w / 120, 77 * h / 120 }, { "File" });
+    tcController.addTabContainer({ w / 40, 2 * h / 3 }, { 19 * w / 40, 37 * h / 120 }, { "Input" });
+    tcController.addTabContainer({ w / 2, 2 * h / 3 }, { 19 * w / 40, 37 * h / 120 }, { "Output" });
 
     for (tgui::TabContainer::Ptr tabContainer : tcController.getTabContainers())
     {
