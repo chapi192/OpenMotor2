@@ -1,8 +1,10 @@
+#pragma once
 #include <vector>
 using std::vector;
 #include <memory>
 using std::unique_ptr;
 
+namespace motor {
 struct GrainData {
 	vector<float> m_mass;
 	vector<float> m_massFlow;
@@ -77,3 +79,4 @@ private:
 	unique_ptr<float>& m_regArray;
 	unique_ptr<float>& m_webArray;
 };
+}
