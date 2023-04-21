@@ -7,7 +7,9 @@
 #include "GrainGraph.hpp"
 #include <cmath>
 #include "Graph/Graph.hpp"
+
 #include "Motor/Motor.hpp"
+#include "Motor/Output.hpp"
 
 float tofloat(std::string);
 GrainGeometry toGrainGeometry(std::string);
@@ -204,6 +206,13 @@ int main()
     graph->addDataSetToGroup(res.m_grains[1].m_web, webGroupID, " - G2");
     graph->addDataSetToGroup(res.m_grains[2].m_web, webGroupID, " - G3");
     graph->update();
+
+    // tab container that has the panel for output
+    auto& tabContainerOutput = *tcController.getTabContainers()[2];
+    auto panelOutput = tabContainerOutput.getPanel(0);
+
+    auto output = motor::Output::create(panelOutput->getSize(), res);
+    panelOutput->add(output);
 
     while (window.isOpen())
     {
