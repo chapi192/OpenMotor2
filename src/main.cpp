@@ -1,7 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <TGUI/TGUI.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
-#include "Includes.h"
 #include <iostream>
 #include "Controllers.hpp"
 #include <TGUI/Widgets/ChildWindow.hpp>
@@ -16,10 +15,17 @@ std::string toLower(std::string);
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "OpenMotor2");
+    auto desktopVideoMode = sf::VideoMode::getDesktopMode();
+    const float windowScaling = 0.75;
+    desktopVideoMode.width *= windowScaling;
+    desktopVideoMode.height *= windowScaling;
+    sf::RenderWindow window(desktopVideoMode, "OpenMotor2");
     window.setVerticalSyncEnabled(true);
+
+    const float w = window.getSize().x;
+    const float h = window.getSize().y;
+
     tgui::Gui gui{window};
-    window.setVerticalSyncEnabled(true);
 
     sf::Font f_ariel;
     auto font_path = "../data/arial.ttf";
@@ -30,10 +36,10 @@ int main()
     }
 
     TabContainerController tcController;
-    tcController.addTabContainer({ WIDTH / 40, HEIGHT / 40 }, { 77 * WIDTH / 120, 77 * HEIGHT / 120}, { "Graph", "Grain" });
-    tcController.addTabContainer({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Input" });
-    tcController.addTabContainer({ WIDTH / 2, 2 * HEIGHT / 3 }, { 19 * WIDTH / 40, 39 * HEIGHT / 120 }, { "Output" });
-    tcController.addTabContainer({ 2 * WIDTH / 3, HEIGHT / 40 }, { 37 * WIDTH / 120, 77 * HEIGHT / 120 }, { "File" });
+    tcController.addTabContainer({ w / 40, h / 40 }, { 77 * w / 120, 77 * h / 120}, { "Graph", "Grain" });
+    tcController.addTabContainer({ w / 40, 2 * h / 3 }, { 19 * w / 40, 39 * h / 120 }, { "Input" });
+    tcController.addTabContainer({ w / 2, 2 * h / 3 }, { 19 * w / 40, 39 * h / 120 }, { "Output" });
+    tcController.addTabContainer({ 2 * w / 3, h / 40 }, { 37 * w / 120, 77 * h / 120 }, { "File" });
 
     for (tgui::TabContainer::Ptr tabContainer : tcController.getTabContainers())
     {
@@ -41,23 +47,23 @@ int main()
     }
 
     SeparatorLineController slController;
-    slController.addSeparatorLine({ WIDTH / 40, HEIGHT / 40 }, { 19 * WIDTH / 20, 2 }, "sl_gui_border_Top", gui); // top outline
-    slController.addSeparatorLine({ WIDTH / 40, 39 * HEIGHT / 40 - 1 }, { 19 * WIDTH / 20 + 1, 2 }, "sl_gui_border_Bottom", gui); // bottom outline
-    slController.addSeparatorLine({ WIDTH / 40, HEIGHT / 40 }, { 2, 19 * HEIGHT / 20 }, "sl_gui_border_Left", gui); // left outline
-    slController.addSeparatorLine({ 39 * WIDTH / 40 - 1, HEIGHT / 40 }, { 2, 19 * HEIGHT / 20 + 1 }, "sl_gui_border_Right", gui); // right outline
-    slController.addSeparatorLine({ 2 * WIDTH / 3 - 1, HEIGHT / 40 }, { 2, 77 * HEIGHT / 120 }, "sl_gui_divider_GraphFile", gui); // graph/grain and file
-    slController.addSeparatorLine({ WIDTH / 2 - 1, 2 * HEIGHT / 3 }, { 2, 37 * HEIGHT / 120 }, "sl_gui_divider_InputOuput", gui); // input and output
-    slController.addSeparatorLine({ WIDTH / 40, 2 * HEIGHT / 3 }, { 19 * WIDTH / 20, 2 }, "sl_gui_divider_InputGraph", gui); // input/output and grain/graph/file
+    slController.addSeparatorLine({ w / 40, h / 40 }, { 19 * w / 20, 2 }, "sl_gui_border_Top", gui); // top outline
+    slController.addSeparatorLine({ w / 40, 39 * h / 40 - 1 }, { 19 * w / 20 + 1, 2 }, "sl_gui_border_Bottom", gui); // bottom outline
+    slController.addSeparatorLine({ w / 40, h / 40 }, { 2, 19 * h / 20 }, "sl_gui_border_Left", gui); // left outline
+    slController.addSeparatorLine({ 39 * w / 40 - 1, h / 40 }, { 2, 19 * h / 20 + 1 }, "sl_gui_border_Right", gui); // right outline
+    slController.addSeparatorLine({ 2 * w / 3 - 1, h / 40 }, { 2, 77 * h / 120 }, "sl_gui_divider_GraphFile", gui); // graph/grain and file
+    slController.addSeparatorLine({ w / 2 - 1, 2 * h / 3 }, { 2, 37 * h / 120 }, "sl_gui_divider_InputOuput", gui); // input and output
+    slController.addSeparatorLine({ w / 40, 2 * h / 3 }, { 19 * w / 20, 2 }, "sl_gui_divider_InputGraph", gui); // input/output and grain/graph/file
     tgui::Container::Ptr tempContainer = tcController.getTabContainers()[0]->getPanel(1);
     slController.addSeparatorLine({ tempContainer->getSize().x - tempContainer->getSize().y, 0},
                                   {1, tempContainer->getSize().y}, "sl_grain_divider_InputGraph", tempContainer); // grain input and grain graph
 
     TextInputController textInputController;
 
-    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 30 }, { 50, 25 }, "ti_input_i1", gui);
-    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 60 }, { 50, 25 }, "ti_input_i2", gui, false, "testing");
-    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 90 }, { 50, 25 }, "ti_input_i2", gui);
-    textInputController.addTextInput({ WIDTH / 40.f + 7, 2.f / 3.f * HEIGHT + 120 }, { 50, 25 }, "ti_input_i2", gui);
+    textInputController.addTextInput({ w / 40.f + 7, 2.f / 3.f * h + 30 }, { 50, 25 }, "ti_input_i1", gui);
+    textInputController.addTextInput({ w / 40.f + 7, 2.f / 3.f * h + 60 }, { 50, 25 }, "ti_input_i2", gui, false, "testing");
+    textInputController.addTextInput({ w / 40.f + 7, 2.f / 3.f * h + 90 }, { 50, 25 }, "ti_input_i2", gui);
+    textInputController.addTextInput({ w / 40.f + 7, 2.f / 3.f * h + 120 }, { 50, 25 }, "ti_input_i2", gui);
     //auto tabContainer = tcController.getTabContainers()[0];
     tempContainer = tcController.getTabContainers()[0]->getPanel(1);
     float linePosX = tempContainer->get("sl_grain_divider_InputGraph")->getPosition().x;
@@ -111,10 +117,10 @@ int main()
     tempContainer->add(edit, "t_grain_GrainRadius");*/
 
     CheckboxController cbController;
-    cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 38 }, { 9, 9 }, textInputController.getTextInputs()[0], "Force");
-    cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 68 }, { 9, 9 }, textInputController.getTextInputs()[1], "Input 2");
-    cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 98 }, { 9, 9 }, textInputController.getTextInputs()[2], "Input 3");
-    cbController.addToggleInputCheckbox({ WIDTH / 40.f + 60, 2.f / 3.f * HEIGHT + 128 }, { 9, 9 }, textInputController.getTextInputs()[3], "Input 4");
+    cbController.addToggleInputCheckbox({ w / 40.f + 60, 2.f / 3.f * h + 38 }, { 9, 9 }, textInputController.getTextInputs()[0], "Force");
+    cbController.addToggleInputCheckbox({ w / 40.f + 60, 2.f / 3.f * h + 68 }, { 9, 9 }, textInputController.getTextInputs()[1], "Input 2");
+    cbController.addToggleInputCheckbox({ w / 40.f + 60, 2.f / 3.f * h + 98 }, { 9, 9 }, textInputController.getTextInputs()[2], "Input 3");
+    cbController.addToggleInputCheckbox({ w / 40.f + 60, 2.f / 3.f * h + 128 }, { 9, 9 }, textInputController.getTextInputs()[3], "Input 4");
 
     for (tgui::CheckBox::Ptr widget : cbController.getCheckBoxes())
     {
@@ -122,7 +128,7 @@ int main()
     }
 
     ButtonController bController;
-    bController.addButton({ 1.f / 2.f * WIDTH - 80, 2.f / 3.f * HEIGHT + 25 }, { 75, 25 }, "Compute");
+    bController.addButton({ 1.f / 2.f * w - 80, 2.f / 3.f * h + 25 }, { 75, 25 }, "Compute");
 
     for (tgui::Button::Ptr button : bController.getButtons())
     {
