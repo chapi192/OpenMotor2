@@ -211,7 +211,7 @@ int main()
     auto& tabContainerOutput = *tcController.getTabContainers()[3];
     auto panelOutput = tabContainerOutput.getPanel(0);
 
-    auto output = motor::Output::create(panelOutput->getSize(), res);
+    auto output = motor::Output::create(panelOutput->getSize(), res, motor);
     panelOutput->add(output);
 
     while (window.isOpen())

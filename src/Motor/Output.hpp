@@ -1,5 +1,6 @@
 #pragma once
 #include "SimData.hpp"
+#include "Motor.hpp"
 #include "Util.hpp"
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <TGUI/Widgets/Label.hpp>
@@ -13,7 +14,7 @@ public:
 	typedef std::shared_ptr<Output> Ptr;
 	typedef std::shared_ptr<const Output> ConstPtr;
 
-	Output(const tgui::Layout2d& size, const SimData& simData) :
+	Output(const tgui::Layout2d& size, const SimData& simData, const Motor& motor) :
 			Container{ "Output", true } {
 		m_size = size;
 
@@ -31,11 +32,11 @@ public:
 		dataList->setExpandLastColumn(true);
 		initDataList();
 
-		update(simData);
+		update(simData, motor);
 	}
 
-	static Ptr create(const tgui::Layout2d& size, const SimData& simData) {
-		return std::make_shared<Output>(size, simData);
+	static Ptr create(const tgui::Layout2d& size, const SimData& simData, const Motor& motor) {
+		return std::make_shared<Output>(size, simData, motor);
 	}
 
 	void initDataList() {
@@ -61,7 +62,7 @@ public:
 		addItem("AdjustedThrustCoeff", ""          );
 	}
 
-	void update(const SimData& simData) {
+	void update(const SimData& simData, const Motor& motor) {
 		setItemValue("Burn Time", simData.m_time.back());
 		setItemValue("Peak Thrust", calcMax(simData.m_force));
 		setItemValue("Volume Loading", simData.m_volumeLoading[0]);
@@ -78,14 +79,49 @@ public:
 		setItemValue("Impulse", impulse);
 
 		float propMass = 0;
+		float peakMassFlux = 0;
 		for (const auto& grain : simData.m_grains) {
 			propMass += grain.m_mass[0];
+
+			float tempMax = calcMax(grain.m_massFlux);
+			if (peakMassFlux < tempMax)
+				peakMassFlux = tempMax;
 		}
+		setItemValue("Propellant Mass", propMass);
+		setItemValue("Peak Mass Flux", peakMassFlux);
+
 		float isp = impulse / (propMass * accGravity);
 		setItemValue("ISP", isp);
 
 		setItemValue("Peak Pressure", calcMax(simData.m_pressure));
-		setItemValue("Average Pressure", calcSum(simData.m_pressure) / simData.m_pressure.size());
+		float avgPressure = calcSum(simData.m_pressure) / simData.m_pressure.size();
+		setItemValue("Average Pressure", avgPressure);
+
+		float propLength = 0;
+		float maxMassFlux = 0;
+		for (const auto& grain : motor.m_grains) {
+			propLength += grain->calcRegressedLength(0);
+		}
+		setItemValue("Propellant Length", propLength);
+
+		float portThroatRatio = motor.m_grains.back()->calcPortArea(0) / circleArea(motor.m_nozzle.m_diaThroat);
+		setItemValue("Port Throat Ratio", portThroatRatio);
+
+		float specificHeatRatio = motor.m_propellant.getCombustionProperties(avgPressure).specificHeatRatio;
+		float exitPressure = motor.m_nozzle.calcExitPressure(specificHeatRatio, avgPressure);
+		float idealThrustCoeff = motor.m_nozzle.calcIdealThrustCoeff(
+				avgPressure, AMB_PRESSURE,
+				specificHeatRatio, 0,
+				exitPressure);
+
+		setItemValue("Ideal Thrust Coeff", idealThrustCoeff);
+
+		float adjThrustCoeff = motor.m_nozzle.calcAdjustedThrustCoeff(
+				avgPressure, AMB_PRESSURE,
+				specificHeatRatio, 0,
+				exitPressure);
+
+		setItemValue("AdjustedThrustCoeff", adjThrustCoeff);
 	}
 private:
 	inline void addItem(const std::string& label, const std::string& unit) {

@@ -17,6 +17,7 @@ namespace motor {
 #define TIMESTEP               0.03
 #define AMB_PRESSURE           101325
 class Motor {
+	friend class Output;
 public:
 	Motor() {
 		m_grains.push_back(std::make_unique<TubeGrain>(0.079375, 0.044831, PerforatedGrain::NEITHER, 0.015875));
