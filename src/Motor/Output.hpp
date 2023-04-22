@@ -15,12 +15,14 @@ public:
 		m_size = size;
 
 		label = tgui::Label::create("Motor Statistics");
+		label->setHorizontalAlignment(tgui::Label::HorizontalAlignment::Center);
+		label->setSize({"40%", label->getSizeLayout().y});
 		add(label);
 
 		dataList = tgui::ListView::create();
 		add(dataList);
-		dataList->setPosition(bindLeft(label), bindBottom(label));
-		dataList->setSize({"40%", "100%" - dataList->getPositionLayout().y});
+		dataList->setPosition(0, bindBottom(label));
+		dataList->setSize({label->getSizeLayout().x, "100%" - dataList->getPositionLayout().y});
 		dataList->setResizableColumns(true);
 		dataList->setHeaderVisible(false);
 		dataList->setExpandLastColumn(true);
@@ -57,6 +59,18 @@ public:
 	}
 
 	void update(const SimData& simData) {
+		float maxForce = 0;
+		float sumForce = 0;
+		for (float force : simData.m_force) {
+			sumForce += force;
+			if (maxForce < force)
+				maxForce = force;
+		}
+		auto max = tgui::String::fromNumber(maxForce);
+		auto avg = tgui::String::fromNumber(sumForce / simData.m_force.size());
+
+		dataList->changeSubItem(3, 1, avg);
+		dataList->changeSubItem(4, 1, max);
 	}
 private:
 	bool isMouseOnWidget(tgui::Vector2f pos) const override {
