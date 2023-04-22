@@ -4,6 +4,8 @@
 #include <TGUI/Widgets/Label.hpp>
 #include <TGUI/Widgets/ListView.hpp>
 
+#include <map>
+
 namespace motor {
 class Output : public tgui::Container {
 public:
@@ -40,25 +42,27 @@ public:
 		dataList->addColumn("Values", dataList->getSize().x * 1.0/4);
 		dataList->addColumn("Units");
 
-		dataList->addItem({"Impulse"            , "", "N*s"       });
-		dataList->addItem({"ISP"                , "", "s"         });
-		dataList->addItem({"Burn Time"          , "", "s"         });
-		dataList->addItem({"Average Thrust"     , "", "N"         });
-		dataList->addItem({"Peak Thrust"        , "", "N"         });
-		dataList->addItem({"Volume Loading"     , "", "%"         });
-		dataList->addItem({"Average Pressure"   , "", "Pa"        });
-		dataList->addItem({"Peak Pressure"      , "", "Pa"        });
-		dataList->addItem({"Initial KN"         , "", ""          });
-		dataList->addItem({"Peak KN"            , "", ""          });
-		dataList->addItem({"Ideal Thrust Coeff" , "", ""          });
-		dataList->addItem({"Propellant Mass"    , "", "kg"        });
-		dataList->addItem({"Propellant Length"  , "", "m"         });
-		dataList->addItem({"Port Throat Ratio"  , "", ""          });
-		dataList->addItem({"Peak Mass Flux"     , "", "kg/(s*m^2)"});
-		dataList->addItem({"AdjustedThrustCoeff", "", ""          });
+		addItem("Impulse"            , "N*s"       );
+		addItem("ISP"                , "s"         );
+		addItem("Burn Time"          , "s"         );
+		addItem("Average Thrust"     , "N"         );
+		addItem("Peak Thrust"        , "N"         );
+		addItem("Volume Loading"     , "%"         );
+		addItem("Average Pressure"   , "Pa"        );
+		addItem("Peak Pressure"      , "Pa"        );
+		addItem("Initial KN"         , ""          );
+		addItem("Peak KN"            , ""          );
+		addItem("Ideal Thrust Coeff" , ""          );
+		addItem("Propellant Mass"    , "kg"        );
+		addItem("Propellant Length"  , "m"         );
+		addItem("Port Throat Ratio"  , ""          );
+		addItem("Peak Mass Flux"     , "kg/(s*m^2)");
+		addItem("AdjustedThrustCoeff", ""          );
 	}
 
 	void update(const SimData& simData) {
+		setItemValue("Burn Time", simData.m_time.back());
+
 		const float accGravity = 9.80665;
 
 		float maxForce = 0;
@@ -68,24 +72,31 @@ public:
 			if (maxForce < force)
 				maxForce = force;
 		}
+		setItemValue("Peak Thrust", maxForce);
+
 		float avgForce = sumForce / simData.m_force.size();
+		setItemValue("Average Thrust", avgForce);
 
 		float dt = (simData.m_time.back() - simData.m_time[0]) / (simData.m_time.size() - 1);
 		float impulse = sumForce * dt;
+		setItemValue("Impulse", impulse);
 
 		float propMass = 0;
 		for (const auto& grain : simData.m_grains) {
 			propMass += grain.m_mass[0];
 		}
 		float isp = impulse / (propMass * accGravity);
+		setItemValue("ISP", isp);
+	}
+private:
+	inline void addItem(const std::string& label, const std::string& unit) {
+		labelMap[label] = dataList->addItem({ label, "", unit });
+	}
 
-		// function turning float into a tgui::String
-		auto toStr = tgui::String::fromNumber<float>;
-		dataList->changeSubItem(0, 1, toStr(impulse));
-		dataList->changeSubItem(1, 1, toStr(isp));
-		dataList->changeSubItem(2, 1, toStr(simData.m_time.back()));
-		dataList->changeSubItem(3, 1, toStr(avgForce));
-		dataList->changeSubItem(4, 1, toStr(maxForce));
+	inline void setItemValue(const std::string& label, float value) {
+		assert(labelMap.find(label) != labelMap.end() && "Invalid label");
+
+		dataList->changeSubItem(labelMap[label], 1, tgui::String::fromNumber(value));
 	}
 private:
 	bool isMouseOnWidget(tgui::Vector2f pos) const override {
@@ -95,8 +106,10 @@ private:
 	Widget::Ptr clone() const override {
 		return std::make_shared<Output>(*this);
 	}
-public:
+private:
 	tgui::Label::Ptr label;
 	tgui::ListView::Ptr dataList;
+
+	std::unordered_map<std::string, size_t> labelMap;
 };
 }
