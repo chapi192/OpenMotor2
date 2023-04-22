@@ -59,6 +59,8 @@ public:
 	}
 
 	void update(const SimData& simData) {
+		const float accGravity = 9.80665;
+
 		float maxForce = 0;
 		float sumForce = 0;
 		for (float force : simData.m_force) {
@@ -66,11 +68,24 @@ public:
 			if (maxForce < force)
 				maxForce = force;
 		}
-		auto max = tgui::String::fromNumber(maxForce);
-		auto avg = tgui::String::fromNumber(sumForce / simData.m_force.size());
+		float avgForce = sumForce / simData.m_force.size();
 
-		dataList->changeSubItem(3, 1, avg);
-		dataList->changeSubItem(4, 1, max);
+		float dt = (simData.m_time.back() - simData.m_time[0]) / (simData.m_time.size() - 1);
+		float impulse = sumForce * dt;
+
+		float propMass = 0;
+		for (const auto& grain : simData.m_grains) {
+			propMass += grain.m_mass[0];
+		}
+		float isp = impulse / (propMass * accGravity);
+
+		// function turning float into a tgui::String
+		auto toStr = tgui::String::fromNumber<float>;
+		dataList->changeSubItem(0, 1, toStr(impulse));
+		dataList->changeSubItem(1, 1, toStr(isp));
+		dataList->changeSubItem(2, 1, toStr(simData.m_time.back()));
+		dataList->changeSubItem(3, 1, toStr(avgForce));
+		dataList->changeSubItem(4, 1, toStr(maxForce));
 	}
 private:
 	bool isMouseOnWidget(tgui::Vector2f pos) const override {
