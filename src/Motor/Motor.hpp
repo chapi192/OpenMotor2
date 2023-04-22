@@ -12,7 +12,7 @@ namespace motor {
 // R, in units of J / (kmol * K)
 #define GAS_CONSTANT 8314.462618
 
-#define BURNOUT_WEB_THRES      1 / 39370
+#define BURNOUT_WEB_THRES      1.0 / 3937
 #define BURNOUT_THRUST_PERCENT 0.1
 #define TIMESTEP               0.03
 #define AMB_PRESSURE           101325
