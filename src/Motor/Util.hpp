@@ -61,3 +61,20 @@ float fSolve_NewtonRaphson(
 	}
 	return x0;
 }
+
+template<typename T>
+T calcSum(const std::vector<T>& vec) {
+	T sum{};
+	for (const T& v : vec)
+		sum += v;
+	return sum;
+}
+
+template<typename T>
+T calcMax(const std::vector<T>& vec) {
+	T max{ vec[0] };
+	for (const T& v : vec)
+		if (max < v)
+			max = v;
+	return max;
+}
