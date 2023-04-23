@@ -74,8 +74,7 @@ public:
 		float sumForce = calcSum(simData.m_force);
 		setItemValue("Average Thrust", sumForce / simData.m_force.size());
 
-		float dt = (simData.m_time.back() - simData.m_time[0]) / (simData.m_time.size() - 1);
-		float impulse = sumForce * dt;
+		float impulse = sumForce * motor.m_dt;  // NOTE: valid as long as the steps of m_time are the constant m_dt
 		setItemValue("Impulse", impulse);
 
 		float propMass = 0;
@@ -110,14 +109,14 @@ public:
 		float specificHeatRatio = motor.m_propellant.getCombustionProperties(avgPressure).specificHeatRatio;
 		float exitPressure = motor.m_nozzle.calcExitPressure(specificHeatRatio, avgPressure);
 		float idealThrustCoeff = motor.m_nozzle.calcIdealThrustCoeff(
-				avgPressure, AMB_PRESSURE,
+				avgPressure, motor.m_ambPressure,
 				specificHeatRatio, 0,
 				exitPressure);
 
 		setItemValue("Ideal Thrust Coeff", idealThrustCoeff);
 
 		float adjThrustCoeff = motor.m_nozzle.calcAdjustedThrustCoeff(
-				avgPressure, AMB_PRESSURE,
+				avgPressure, motor.m_ambPressure,
 				specificHeatRatio, 0,
 				exitPressure);
 

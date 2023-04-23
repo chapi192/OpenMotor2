@@ -12,14 +12,15 @@ namespace motor {
 // R, in units of J / (kmol * K)
 #define GAS_CONSTANT 8314.462618
 
-#define BURNOUT_WEB_THRES      1.0 / 3937
-#define BURNOUT_THRUST_PERCENT 0.1
-#define TIMESTEP               0.03
-#define AMB_PRESSURE           101325
 class Motor {
 	friend class Output;
 public:
 	Motor() {
+		m_dt = 0.03;
+		m_ambPressure = 101325;
+		m_burnoutWebThres = 1.0 / 3937;
+		m_burnoutThrustPercent = 0.1;
+
 		m_grains.push_back(std::make_unique<TubeGrain>(0.079375, 0.044831, PerforatedGrain::NEITHER, 0.015875));
 		m_grains.push_back(std::make_unique<TubeGrain>(0.079375, 0.044831, PerforatedGrain::NEITHER, 0.015875));
 		m_grains.push_back(std::make_unique<TubeGrain>(0.079375, 0.044831, PerforatedGrain::NEITHER, 0.015875));
@@ -68,7 +69,6 @@ public:
 		auto reg      = regSPtr.get();
 		auto web      = webSPtr.get();
 
-		const auto dt = TIMESTEP;
 		const auto& propDensity = m_propellant.m_density;
 		const auto motorVolume = calcTotalVolume();
 
@@ -90,18 +90,18 @@ public:
 		}
 
 		float maxForce = -1;
-		while (sim.m_force.back() > BURNOUT_THRUST_PERCENT / 100 * maxForce) {  // sim loop
+		while (sim.m_force.back() > m_burnoutThrustPercent / 100 * maxForce) {  // sim loop
 			float currMassFlow = 0;  // current amount of mass flowing through the grain
 			for (int i = 0; i < grainSize; i++) {
 				const auto& grain = *m_grains[i];
-				if (grain.calcWebLeft(reg[i]) > BURNOUT_WEB_THRES) {
+				if (grain.calcWebLeft(reg[i]) > m_burnoutWebThres) {
 					// Calculate change in regression at the current pressure
-					float dReg = dt * m_propellant.calcBurnRate(sim.m_pressure.back());
+					float dReg = m_dt * m_propellant.calcBurnRate(sim.m_pressure.back());
 					// Find the mass flux through the grain based on the mass flow fed into from grains above it
-					massFlux[i] = grain.calcPeakMassFlux(currMassFlow, dt, reg[i], dReg, propDensity);
+					massFlux[i] = grain.calcPeakMassFlux(currMassFlow, m_dt, reg[i], dReg, propDensity);
 					// Find the mass of the grain after regression
 					float newMass = grain.calcVolumeAtRegression(reg[i]) * propDensity;
-					currMassFlow += (mass[i] - newMass) / dt;
+					currMassFlow += (mass[i] - newMass) / m_dt;
 					mass[i] = newMass;
 
 					reg[i] += dReg;
@@ -127,13 +127,13 @@ public:
 			float force = calcForce(pressure, dThroat, exitPressure);
 			sim.m_force.push_back(force);
 
-			sim.m_time.push_back(sim.m_time.back() + dt);
+			sim.m_time.push_back(sim.m_time.back() + m_dt);
 
 			float slagRate = 0;
 			if (pressure != 0)
 				slagRate = (1 / pressure) * m_nozzle.m_slagCoeff;
 			float erosionRate = pressure * m_nozzle.m_erosionCoeff;
-			float change = dt * (-2 * slagRate + 2 * erosionRate);
+			float change = m_dt * (-2 * slagRate + 2 * erosionRate);
 			sim.m_dThroat.push_back(dThroat + change);
 
 			// TODO: Add more constraints to catch any errors
@@ -146,7 +146,7 @@ public:
 
 	float calcForce(float chamberPres, float dThroat, float exitPres) {
 		float k = m_propellant.getCombustionProperties(chamberPres).specificHeatRatio;
-		float thrustCoeff = m_nozzle.calcAdjustedThrustCoeff(chamberPres, AMB_PRESSURE, k, dThroat, exitPres);
+		float thrustCoeff = m_nozzle.calcAdjustedThrustCoeff(chamberPres, m_ambPressure, k, dThroat, exitPres);
 		float thrust = thrustCoeff * m_nozzle.calcThroatArea(dThroat) * chamberPres;
 		return std::max(thrust, 0.f);
 	}
@@ -168,7 +168,7 @@ public:
 	float calcBurningSurfaceArea(float reg[]) {
 		float sum = 0;
 		for (size_t i = 0; i != m_grains.size(); i++)
-			if (m_grains[i]->calcWebLeft(reg[i]) > BURNOUT_WEB_THRES)
+			if (m_grains[i]->calcWebLeft(reg[i]) > m_burnoutWebThres)
 				sum += m_grains[i]->calcSurfaceAreaAtRegression(reg[i]);
 		return sum;
 	}
@@ -209,5 +209,10 @@ private:
 	Nozzle m_nozzle;
 	Propellant m_propellant;
 	std::vector<std::unique_ptr<Grain>> m_grains;
+
+	float m_dt;
+	float m_ambPressure;
+	float m_burnoutWebThres;
+	float m_burnoutThrustPercent;
 };
 }
